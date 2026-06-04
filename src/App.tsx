@@ -2,8 +2,12 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 import type { CSSProperties, DragEvent as ReactDragEvent, FormEvent, MouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DocReader } from './reader/DocReader';
-import { manualSections } from './data/manualContent';
+import { manualHtml, manualSections } from './data/manualContent';
 import { DEFAULT_TRANSLATIONS } from './data/seeds';
+import defaultmediaassetsJson from './../content/media-assets.json' with { type: 'json' };
+import defaultgamesJson from './../content/games.json' with { type: 'json' };
+import defaultdocsJson from './../content/docs.json' with { type: 'json' };
+import defaultaviatorbackofficesectionsJson from './../content/sections/aviator-backoffice.json' with { type: 'json' };
 import { auth, canRoleWrite, store } from './storage';
 import type { PersistenceStatus, UserRole, WritePermission } from './storage';
 import MarketingLanding from './marketing/MarketingLanding';
@@ -394,7 +398,7 @@ const DOC_COMPONENT_VARIANT_LABELS: Record<string, string> = {
   note: 'Note',
 };
 const DOC_COMPONENT_DRAG_TYPE = 'application/x-doc-component-kind';
-const DEFAULT_MEDIA_ASSETS: MediaAsset[] = [];
+const DEFAULT_MEDIA_ASSETS: MediaAsset[] = defaultmediaassetsJson as MediaAsset[];
 const ADMIN_PAGES = ['dashboard', 'documents', 'sections', 'media', 'translations', 'publishing', 'products', 'users', 'landing'] as const;
 
 interface GameEntry {
@@ -613,7 +617,7 @@ const DOCUMENT_TEMPLATES: DocumentTemplate[] = [
   },
 ];
 
-const DEFAULT_GAMES: GameEntry[] = [];
+const DEFAULT_GAMES: GameEntry[] = defaultgamesJson as GameEntry[];
 
 const PRODUCT_SETUP_STEPS = [
   'Create the product documentation stream.',
@@ -998,15 +1002,92 @@ const DEFAULT_MINESCAPE_INTERFACE_SECTIONS: SectionEntry[] = [
   ),
 ];
 
-const DEFAULT_DOCS: DocEntry[] = [];
+const DEFAULT_DOCS: DocEntry[] = defaultdocsJson as DocEntry[];
 
-const DEFAULT_SECTIONS: SectionEntry[] = [];
+const sectionHtmlBlocks = extractManualSections(manualHtml);
 
-const DEFAULT_BACKOFFICE_SECTIONS: SectionEntry[] = [];
+const DEFAULT_SECTIONS: SectionEntry[] = manualSections.map((section, index) => {
+  const html = sectionHtmlBlocks[index] ?? '';
+  return {
+    id: section.id,
+    number: section.number,
+    slug: section.slug,
+    title: section.title,
+    summary: getSectionSummary(html, index),
+    status: index === 16 ? 'draft' : 'published',
+    owner: index === 16 ? 'Product' : 'Docs',
+    updatedAt: '2026-05-04',
+    html,
+  };
+});
 
-const DEFAULT_INTEGRATION_SECTIONS: SectionEntry[] = [];
+const DEFAULT_BACKOFFICE_SECTIONS: SectionEntry[] = [
+  docSection('bo-1', '1.0', 'dashboard', 'Dashboard Overview', 'DocPilot health, product scope, translations, and publish status in one operational view.', 'published', 'Docs', [
+    'The dashboard is the command center for documentation work. It shows the selected product, total documentation streams, active languages, average translation completion, and open review work.',
+    'Editors use it to decide where to spend time first: incomplete translations, draft sections, or documentation versions waiting for publish approval.',
+  ]),
+  docSection('bo-2', '2.0', 'product-selection', 'Product Selection', 'Choose a product before editing related documentation.', 'published', 'Product', [
+    'Product selection controls which manual, back-office guide, operations notes, and integration documentation are shown in the workspace.',
+    'Global documentation streams can still be reused across products, but every editable document keeps a product relationship so future launches can stay organized.',
+  ]),
+  docSection('bo-3', '3.0', 'inline-editing', 'Inline Documentation Editing', 'Hover over a rendered documentation section and open the pencil editor.', 'review', 'Docs', [
+    'The editor renders documentation in the same visual language as the front-end manual. Hovering a section highlights the exact editable area and exposes the pencil action.',
+    'The editor supports clean writing, inline styling, visual components, preserved figures, and managed tables without exposing markup.',
+  ]),
+  docSection('bo-4', '4.0', 'translation-management', 'Translation Management', 'Maintain translatable content across all configured languages.', 'published', 'Localization', [
+    'Each language entry receives the same translatable content set, which keeps coverage measurable and makes missing copy obvious.',
+    'Translation progress is calculated from filled strings against the full documentation content set. Reviewers can update status independently from content edits.',
+  ]),
+  docSection('bo-5', '5.0', 'versioning', 'Versioning And Publishing', 'Create documentation snapshots before partner or operator handoff.', 'draft', 'Release', [
+    'Every document has its own version number and release timeline. Publishing snapshots capture intent, notes, status, and the document they belong to.',
+    'Use versions for auditability: when content changes, create a new snapshot and publish it only after editorial and localization checks are complete.',
+  ]),
+];
 
-const DEFAULT_CUSTOM_SECTIONS: Record<string, SectionEntry[]> = {};
+const DEFAULT_INTEGRATION_SECTIONS: SectionEntry[] = [
+  docSection('int-1', '1.0', 'introduction', 'Introduction', 'Partner-facing overview for launching Aviator Studio games.', 'published', 'Integrations', [
+    'This guide describes how operators connect to Aviator Studio, launch the game, exchange authentication details, and consume supporting APIs.',
+    'The uploaded integration PDF covers launch flow, endpoints, game flow diagrams, freebets, webhooks, round history, provider configs, reconciliation, fun mode, debugging, and FAQ.',
+  ]),
+  docSection('int-2', '2.0', 'sample-app', 'Integration Sample App', 'Reference sample application for validating launch and endpoint wiring.', 'review', 'Integrations', [
+    'The sample app gives technical teams a controlled way to validate launch URLs, tokens, provider configuration, and iframe embedding before production work begins.',
+    'Keep this section aligned with the actual sample repository and update version notes whenever launch parameters or environment assumptions change.',
+  ]),
+  docSection('int-3', '3.0', 'launch-game', 'Launch Game', 'JWT authentication and launch URL parameters used by the front-end application.', 'published', 'Integrations', [
+    'Launch prerequisites include a public key, provider ID, and the front-end application URL supplied by Aviator Studio.',
+    'Authentication uses a JWT payload containing values such as userId and iat. The resulting game URL can include token, providerId, language, currency, gameId, backToHome, fullscreen, chat, casinoId, country, and deductFreeBet.',
+  ]),
+  docSection('int-4', '4.0', 'integration-endpoints', 'Integration Endpoints', 'Server-to-server API references required for wallet and game operations.', 'review', 'Backend', [
+    'Endpoint documentation should list method, path, authorization, request body, response body, error format, retries, and idempotency behavior.',
+    'Keep examples production-shaped but safe: use demo identifiers, demo currency values, and non-secret tokens.',
+  ]),
+  docSection('int-5', '5.0', 'game-flow', 'Game Flow And Round Sequences', 'Operational flow diagrams for launch, rounds, bets, cashout, and settlement.', 'review', 'Product', [
+    'Game flow documentation should explain what happens before launch, during a round, after settlement, and when an operator system is temporarily unavailable.',
+    'Round sequence docs are especially useful for debugging disputes because they connect player-visible states to backend events.',
+  ]),
+  docSection('int-6', '6.0', 'freebets-webhooks', 'Freebets And Webhooks', 'Freebet API behavior and webhook delivery expectations.', 'draft', 'Promotions', [
+    'Freebet documentation should cover grant creation, eligibility, expiration, minimum cashout, settlement, and cancellation behavior.',
+    'Webhook documentation should define event names, payload shape, signing, retry policy, timeout expectations, and duplicate delivery handling.',
+  ]),
+  docSection('int-7', '7.0', 'history-configs', 'Round History And Provider Configs', 'APIs for history lookup and operator-specific provider configuration.', 'review', 'Integrations', [
+    'Round history APIs support dispute review, support tooling, and back-office reconciliation. Provider config APIs define operator-level behavior such as currencies, limits, and launch availability.',
+    'Any value that changes player-facing behavior should be versioned and described with a default, allowed range, and rollout note.',
+  ]),
+  docSection('int-8', '8.0', 'reconciliation-fun-mode', 'Reconciliation And Fun Mode', 'Financial reconciliation workflows and non-real-money launch behavior.', 'draft', 'Finance', [
+    'Reconciliation documentation should define reporting windows, transaction identifiers, expected totals, mismatch handling, and escalation contacts.',
+    'Fun mode should be documented separately from real-money launch so operators understand which endpoints are bypassed, mocked, or still required.',
+  ]),
+  docSection('int-9', '9.0', 'debugging-faq', 'Debugging And FAQ', 'Common integration failures, diagnostics, and operator support answers.', 'draft', 'Support', [
+    'Debugging docs should help teams inspect launch parameters, token validity, provider configuration, currency mismatches, iframe restrictions, network errors, and settlement callbacks.',
+    'The FAQ should stay practical and searchable: symptom, likely cause, verification step, and recommended fix.',
+  ]),
+];
+
+const DEFAULT_AVIATOR_BACKOFFICE_SECTIONS: SectionEntry[] = defaultaviatorbackofficesectionsJson as SectionEntry[];
+
+const DEFAULT_CUSTOM_SECTIONS: Record<string, SectionEntry[]> = {
+  'doc-aviator-back-office': DEFAULT_AVIATOR_BACKOFFICE_SECTIONS,
+};
 
 const DEFAULT_LOCALIZATION_KEYS = buildLocalizationKeysFromBundles([
   { doc: DEFAULT_DOCS[0], sections: DEFAULT_SECTIONS },
@@ -8128,6 +8209,14 @@ function collectMediaUsageRefs(assets: MediaAsset[], bundles: { doc: DocEntry; s
 function text(form: FormData, key: string) {
   return String(form.get(key) ?? '');
 }
+
+function extractManualSections(html: string) {
+  const mainMatch = html.match(/<main class="doc-main">([\s\S]*?)<!-- ====================== \/LAYOUT ====================== -->/);
+  const mainHtml = mainMatch?.[1] ?? '';
+  const matches = [...mainHtml.matchAll(/(?:<!-- ====================== [\s\S]*? ====================== -->\s*)?<div class="section-banner[\s\S]*?(?=(?:<!-- ====================== \d+\.\d)|<!-- ====================== \/LAYOUT)/g)];
+  return matches.map((match) => match[0].trim());
+}
+
 
 function starterSectionsForDocument(doc: DocEntry, productName: string) {
   const template = getDocumentTemplate(docTemplateId(doc));

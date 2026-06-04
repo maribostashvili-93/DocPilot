@@ -30,7 +30,8 @@ SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # Paths excluded from sync (tenant content). rsync --exclude patterns.
 EXCLUDES=(
   ".git/"
-  ".github/"
+  # Only the sync workflow itself is Aviator-private; issue/PR templates DO sync.
+  ".github/workflows/sync-to-public.yml"
   ".docpilot-data/"
   ".docpilot-smoke-data/"
   ".vite/"

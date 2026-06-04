@@ -1,0 +1,49 @@
+name: 🎨 Design suggestion
+description: Visual or interaction changes to existing UI
+labels: [design, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Design work is most productive when grounded in a specific moment of user friction.
+        For broader conversations consider opening a [discussion](https://github.com/EarendilM83/DocPilot/discussions) instead.
+
+  - type: input
+    id: surface
+    attributes:
+      label: The component / view
+      description: Where in DocPilot does this live?
+      placeholder: "Reader's right-side TOC, /docs/<slug>"
+    validations:
+      required: true
+
+  - type: textarea
+    id: awkward
+    attributes:
+      label: What's awkward right now
+      description: A specific user moment, not "I don't like the colors". Screenshot if you can.
+      placeholder: "On screens narrower than 1280px the TOC overlaps body text and becomes unreadable."
+    validations:
+      required: true
+
+  - type: textarea
+    id: try
+    attributes:
+      label: What you'd try instead
+      description: Sketches, Figma frames, hand-annotated screenshots, or describe the principle. Drag-drop images directly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: keep
+    attributes:
+      label: Constraints to keep
+      description: What should NOT change? Brand colors, learned interactions, accessibility behaviors.
+      placeholder: "Keep dark-mode-first defaults; the brand red (#ff1b23) is fixed."
+
+  - type: input
+    id: figma
+    attributes:
+      label: Figma link (optional)
+      description: For larger redesigns with multiple frames.
+      placeholder: "https://www.figma.com/file/..."

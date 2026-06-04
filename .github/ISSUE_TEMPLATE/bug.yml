@@ -1,0 +1,86 @@
+name: 🐛 Bug report
+description: Something broken or misbehaving in DocPilot
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. The clearer your description, the faster it gets fixed.
+        Before submitting, please skim [open issues](https://github.com/EarendilM83/DocPilot/issues?q=is%3Aissue) for duplicates.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: One or two sentences describing what you saw.
+      placeholder: "When I click Save in the section editor, the page reloads and my changes are lost."
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-expected
+    attributes:
+      label: What you expected
+      description: What should have happened instead?
+      placeholder: "The section should save and a toast should confirm success."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: A numbered list that someone unfamiliar with your setup can follow.
+      placeholder: |
+        1. Log in as a company-admin at /c/<slug>
+        2. Navigate to /admin/v2/sections
+        3. Click any section's "Edit" button
+        4. Change the title and click Save
+        5. Observe the page reload
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / video
+      description: Drag-drop images or paste a Loom/video link. Annotated screenshots are very helpful.
+
+  - type: input
+    id: docpilot-url
+    attributes:
+      label: DocPilot URL
+      description: Where you saw this happen (localhost, public demo, your deployment).
+      placeholder: "http://localhost:5173"
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser + OS
+      placeholder: "Chrome 142 on macOS 14.2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      options:
+        - Light
+        - Dark
+        - Doesn't matter / saw it on both
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors
+      description: Open DevTools (Cmd/Ctrl + Opt + I), Console tab, copy anything red.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Related issues, recent changes that may matter, environment quirks.

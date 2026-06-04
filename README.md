@@ -242,9 +242,174 @@ Default admin role assigned on first boot via `seed-on-boot.mjs` is `company-adm
 
 ## Contributing
 
-Bug reports and improvements welcome: [issues](https://github.com/EarendilM83/DocPilot/issues).
+DocPilot is built in the open. Three ways to help — pick the one that fits.
 
-The platform is content-agnostic by design — your tenant data lives in your own deployment's database. The repo only ships generic platform code plus a self-documenting demo dataset.
+| You are a… | You probably want to… | Jump to |
+|---|---|---|
+| 🧑‍💻 **User** | Report a bug or request a feature | [As a user](#as-a-user) |
+| 🛠 **Developer** | Submit a fix or build a feature | [As a developer](#as-a-developer) |
+| 🎨 **Designer** | Suggest visual changes or new flows | [As a designer](#as-a-designer) |
+
+### Before you file anything
+
+Spend 60 seconds on these checks — they cut the back-and-forth dramatically:
+
+1. **Search [existing issues](https://github.com/EarendilM83/DocPilot/issues?q=is%3Aissue)** for keywords from your problem. There's a good chance someone already raised it.
+2. **Pull the latest `main`** and confirm the issue still reproduces. Bugs get fixed faster than READMEs get updated.
+3. **Open DevTools** (Cmd/Ctrl + Opt + I → Console tab) — if anything is red, copy the message into your report.
+4. **Note your environment**: browser + version, OS, whether you're in dark or light mode.
+
+### As a user
+
+You don't need to write code. Good bug reports and clear feature requests are some of the most valuable contributions to any project.
+
+**Filing a bug report**
+
+Open a [new issue](https://github.com/EarendilM83/DocPilot/issues/new?template=bug.yml) and use this template:
+
+```markdown
+**What happened**
+One or two sentences describing what you saw.
+
+**What I expected**
+One sentence describing what you expected instead.
+
+**Steps to reproduce**
+1. Go to …
+2. Click on …
+3. Notice that …
+
+**Screenshots / video**
+(drag-drop into the issue text — GitHub uploads them automatically)
+
+**Environment**
+- DocPilot URL: (e.g., http://localhost:5173 or a deployed URL)
+- Browser: (e.g., Chrome 142 on macOS 14.2)
+- Theme: (light / dark)
+
+**Console errors**
+(paste anything red from DevTools → Console)
+```
+
+The most common mistake is "DocPilot is broken" without the steps to reproduce. Spend the extra 30 seconds — you'll get help faster.
+
+**Requesting a feature**
+
+Open a [new issue](https://github.com/EarendilM83/DocPilot/issues/new?template=feature.yml) using this template:
+
+```markdown
+**The problem this solves**
+One or two sentences describing the situation you're in. Skip the proposed solution for now — describe the pain.
+
+**Who experiences this**
+e.g., "Tenant admins managing 50+ docs", "Reviewers checking translations", "New users on their first session"
+
+**My ideal outcome**
+What would a successful resolution look like? Describe the result, not the implementation.
+
+**Alternatives I considered**
+Existing workarounds, other tools that solve this differently, or "I don't know what would work" (totally fine).
+
+**Extra context**
+Links, screenshots from other tools, related docs, anything that helps a maintainer understand why this matters.
+```
+
+The strongest feature requests start with the user need ("I need to..."), not the solution ("Add a button that..."). The maintainers often see a better path once they understand the underlying need.
+
+### As a developer
+
+**Get a working local copy:**
+
+```bash
+git clone https://github.com/EarendilM83/DocPilot.git
+cd DocPilot
+npm ci
+echo 'ADMIN_PASSWORD=DevPassword!1A' > .env
+npm run dev   # API on :4179, web on :5173
+```
+
+**Code conventions:**
+
+- TypeScript with the existing rules in `tsconfig.app.json` and `eslint.config.js`. No emoji output in code (the project's house style — emoji in chat / docs is fine).
+- Prefer surgical edits over refactors. Touch only what your fix requires.
+- New utilities go inside the existing file family (`src/multitenant/` for tenant features, `src/reader/` for the reading view, `src/admin/` for superadmin, `server/` for backend).
+- Run `npm run typecheck && npm run lint && npm run build` before opening a PR.
+- For UI changes: write a Playwright or Vitest test if there's a regression worth guarding. Manual screenshots in the PR description are also valuable.
+
+**PR flow:**
+
+1. Fork the repo, branch off `main` (e.g., `fix/sidebar-hover-contrast`).
+2. Make small, focused commits with imperative subjects (`fix: sidebar hover text invisible in dark mode`, not `Fixed bug`).
+3. Open the PR against `EarendilM83/DocPilot:main`. Use the PR template — describe **what**, **why**, and **how to test**.
+4. Link the issue you're closing (`Closes #42`).
+5. Be ready to iterate. Reviewers often have context the README doesn't capture.
+
+**Good first issues:**
+
+Look for the [`good-first-issue`](https://github.com/EarendilM83/DocPilot/labels/good-first-issue) label — these are scoped to be completable in a focused evening.
+
+### As a designer
+
+DocPilot has a deliberate visual language — clean, dense, dark-mode aware, no chrome that doesn't earn its space. If you'd like to push it forward:
+
+**Suggesting a visual change**
+
+Open a [discussion](https://github.com/EarendilM83/DocPilot/discussions) (preferred over issues for design conversations) using this shape:
+
+```markdown
+**The component / view**
+e.g., "Reader's right-side TOC", "Recently-updated card on /c/<slug>", "Tab component in section bodies"
+
+**What's awkward right now**
+A specific moment where the current design gets in the user's way. Screenshot before/after if you can.
+
+**What I'd try instead**
+Sketch, Figma frame, hand-drawn screenshot annotation — anything visual.
+Describe the principle behind your suggestion ("more visual hierarchy", "easier to scan at small sizes").
+
+**Constraints to keep**
+What should NOT change (the brand, an interaction pattern users have learned, a piece of accessibility behavior)?
+```
+
+**Sharing mockups**
+
+GitHub Discussions and Issues both render dragged-in images at full width. Figma frames can be embedded via shareable links. For full mockups (multiple frames), a public Figma file beats a single screenshot.
+
+**Reviewing existing UI**
+
+The fastest way to surface friction is to record a short Loom or screen recording walking through a specific flow with audio: "I open this, click here, I expect X but get Y." 60–90 seconds is plenty.
+
+**Design tokens**
+
+Colors, type scale, spacing, and motion variables live in `src/styles.css`, `src/reader/reader.css`, and `src/multitenant/multitenant.css`. Changes that introduce new tokens should explain the reason in the PR description.
+
+### Pull request expectations
+
+Every PR should have:
+
+- A **clear title** in imperative form.
+- A **summary** of what changes and why (a paragraph, not a sentence).
+- A **test plan** — bullet list of how a reviewer can verify your change works. Include console-error checks for anything UI-touching.
+- **Screenshots** for visible changes (before + after if applicable).
+- **A linked issue** when one exists.
+
+Use the PR template — it captures all of the above.
+
+### What we don't accept
+
+A small list to save you time:
+
+- PRs that bundle unrelated changes ("fix bug + refactor X + bump deps"). Split them.
+- PRs that don't compile. `npm run build` must pass.
+- Drive-by formatting changes to files you didn't otherwise touch.
+- Adding telemetry, analytics, or third-party network requests without prior discussion.
+- Sensitive data in test fixtures (credentials, real names, internal URLs).
+
+### Community norms
+
+- Be specific. "It's broken" is hard to act on; "Clicking Save on the section editor returns a 401 silently" is gold.
+- Be patient. Maintainers triage in batches.
+- Be kind. Everyone here is volunteering their time.
 
 ---
 

@@ -1,0 +1,58 @@
+name: ✨ Feature request
+description: Propose a new capability or improvement
+labels: [enhancement, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing something new. Strong feature requests start with the **user need**,
+        not the implementation — describe the situation you're in, and let the maintainers + community
+        explore the right solution.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem this solves
+      description: One or two sentences describing the pain. Skip the proposed solution for now.
+      placeholder: "Editors who manage 50+ docs can't tell at a glance which ones are stale. We're missing all our doc-freshness deadlines."
+    validations:
+      required: true
+
+  - type: textarea
+    id: who
+    attributes:
+      label: Who experiences this
+      description: Specific roles and contexts. The more specific, the better the eventual design.
+      placeholder: "Tenant admins of larger workspaces (>30 docs), especially during quarterly review cycles."
+    validations:
+      required: true
+
+  - type: textarea
+    id: ideal-outcome
+    attributes:
+      label: My ideal outcome
+      description: What does a successful resolution look like? Describe the result, not how to build it.
+      placeholder: "I want to open the docs library and immediately see which docs haven't been touched in >90 days, ordered by staleness."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives I considered
+      description: Existing workarounds, other tools that solve this differently, or "I don't know what would work" (totally fine).
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Extra context
+      description: Screenshots from other tools, related discussions, links to relevant docs.
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: How impactful is this for you?
+      options:
+        - label: "Blocking — I can't use DocPilot for my use case without this"
+        - label: "Painful — I have a workaround but it's costly"
+        - label: "Nice-to-have — would make things smoother"

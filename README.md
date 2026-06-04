@@ -143,13 +143,33 @@ Reload the page; your doc is live at `http://localhost:5173/docs/handbook`. The 
 
 ## Deploy to a real server
 
-DocPilot ships with a Dockerfile and a step-by-step EC2 playbook.
+DocPilot ships as a single-process app, packaged in a Dockerfile in this repo. Anywhere that runs a Node 20 Docker container with a persistent disk will work.
 
-- **AWS EC2 (recommended for first deploy):** see [DEPLOY-AWS.md](DEPLOY-AWS.md). Walks you through launching an instance, building the container, and reaching the site at `http://<your-ec2-ip>`.
-- **Fly.io / Railway / Render / DigitalOcean App Platform:** same Docker image works. You need (a) a persistent disk mounted at `/app/.docpilot-data` and (b) the `ADMIN_PASSWORD` env var set.
-- **Bare metal / your own VM:** `docker build -t docpilot . && docker run -d -p 80:4179 -v docpilot-data:/app/.docpilot-data --env-file .env docpilot`.
+**Requirements:**
 
-The volume at `/app/.docpilot-data` holds your SQLite database, uploaded media, and audit log — back it up the same way you'd back up any database.
+- A host that can run a Docker container with a mounted volume.
+- A persistent volume mounted at `/app/.docpilot-data` (holds the SQLite database, uploaded media, audit log, and CMS state file).
+- An `.env` file (or host environment) with at minimum `ADMIN_PASSWORD` set — used on first boot to create the initial admin user.
+- Port `4179` exposed publicly, or remapped to `80`/`443` if you're putting a reverse proxy in front.
+
+**One-shot deploy command:**
+
+```bash
+docker build -t docpilot .
+docker run -d \
+  --name docpilot \
+  --restart unless-stopped \
+  --env-file .env \
+  -p 80:4179 \
+  -v docpilot-data:/app/.docpilot-data \
+  docpilot
+```
+
+**Where to host:** Fly.io, Railway, Render, DigitalOcean App Platform, AWS EC2/ECS, GCP Cloud Run with a persistent disk, your own VM, or a Kubernetes cluster — all of them work the same way. The choice is about cost, your existing infrastructure, and how much you want to manage yourself.
+
+**TLS:** the included server speaks plain HTTP. For HTTPS, put a reverse proxy in front (Caddy, nginx, Cloudflare Tunnel, your platform's load balancer) and set `DOCPILOT_COOKIE_SECURE=1` in the env so the session cookie carries the Secure flag.
+
+**Backups:** the `/app/.docpilot-data` volume is your only stateful surface. Snapshot it the way you'd snapshot a Postgres data directory.
 
 ---
 

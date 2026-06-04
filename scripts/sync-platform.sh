@@ -44,6 +44,14 @@ EXCLUDES=(
   "public/images/backoffice/"
   "public/images/manual/"
   "HANDBOOK.md"
+  # Aviator-specific deploy + dev docs. Public README has generic deploy info.
+  "DEPLOY-AWS.md"
+  "DEPLOY.md"
+  "RESTART.md"
+  "BATCAVE.md"
+  # Aviator content-seeding + probe scripts.
+  "scripts/seed-minescape/"
+  "scripts/probe-aviator-users.mjs"
 )
 
 EXCLUDE_FLAGS=()

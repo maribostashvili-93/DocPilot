@@ -1,0 +1,24 @@
+version = 1
+
+[batcave]
+url = "http://127.0.0.1:3777"
+workspace_id = "ws-local"
+project_id = "prod-1776919051784"
+project_slug = "aviatordocs"
+environment = "local"
+default_workflow = "agentic"
+required = true
+
+[repo]
+name = "AviatorDocs"
+root_hint = "."
+remote_url = "https://github.com/EarendilM83/AviatorDocs.git"
+default_branch = "main"
+
+[auth]
+profile = "default"
+
+[agent]
+instructions_file = "BATCAVE.md"
+context_command = "batcave project context --format markdown"
+fallback_mode = "read-cache-write-queue"

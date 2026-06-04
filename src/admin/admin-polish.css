@@ -1,0 +1,383 @@
+/* src/admin/admin-polish.css
+ *
+ * Targeted design-system polish for the legacy admin shell.
+ * Scope: anything inside .app-view (the admin top-level wrapper).
+ * Goal: align typography, button system, and surface tokens with
+ * the new reader without rewriting the entire admin.
+ *
+ * What we do NOT touch:
+ *   - layout structure (header, sidebar, main grid)
+ *   - feature-specific complex widgets (marker editor, lightbox)
+ *   - any token consumed by ThemePreset-driven embeds
+ *
+ * What we DO touch:
+ *   - font family: Sansation/Roboto → Inter (familiar with reader)
+ *   - heading weights / sizes / tracking
+ *   - button: primary (filled red), secondary (outline), ghost
+ *   - status pills
+ *   - card chrome
+ */
+
+.app-view,
+.app-view input,
+.app-view button,
+.app-view select,
+.app-view textarea {
+  font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.005em;
+}
+
+/* Admin headings — drop the serif, use Inter at proper weights */
+.app-view h1,
+.app-view h2,
+.app-view h3,
+.app-view h4,
+.app-view .cms-page h1,
+.app-view .cms-page h2 {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+}
+.app-view h1 { font-size: 28px; line-height: 1.18; }
+.app-view h2 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: -0.012em; }
+.app-view h3 { font-size: 16px; line-height: 1.3;  font-weight: 600; letter-spacing: -0.005em; }
+.app-view h4 { font-size: 14px; font-weight: 600; }
+
+/* Cleaner button system — keep all existing classes but normalise */
+.app-view .btn,
+.app-view button.btn {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13.5px;
+  letter-spacing: 0;
+  transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
+}
+.app-view .btn-red {
+  background: var(--c-red);
+  color: #fff;
+  border: 1px solid var(--c-red);
+}
+.app-view .btn-red:hover { filter: brightness(.92); }
+.app-view .btn-outline,
+.app-view .btn-secondary {
+  background: transparent;
+  color: var(--c-eerie-black, #191919);
+  border: 1px solid #d5d8dd;
+}
+.app-view .btn-outline:hover,
+.app-view .btn-secondary:hover {
+  border-color: var(--c-red);
+  color: var(--c-red);
+  background: #fdf3f4;
+}
+.app-view .btn-ghost {
+  background: transparent;
+  color: var(--c-eerie-black, #191919);
+  border: 1px solid transparent;
+}
+.app-view .btn-ghost:hover {
+  background: #f2efe8;
+}
+.app-view .btn:focus-visible {
+  outline: 2px solid var(--c-red);
+  outline-offset: 2px;
+}
+
+/* CMS controller bar — tighten action button row */
+.app-view .cms-controller-bar,
+.app-view .cms-action-bar,
+.app-view .cms-section-controller {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.app-view .cms-controller-bar > button,
+.app-view .cms-action-bar > button,
+.app-view .cms-section-controller > button {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+/* Status pills — consistent across admin */
+.app-view .status-pill,
+.app-view .pill {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 99px;
+  text-transform: uppercase;
+}
+
+/* Cards — consistent soft shadow + border-radius across admin */
+.app-view .card,
+.app-view .cms-card,
+.app-view .theme-preset-card,
+.app-view .doc-type-card,
+.app-view .product-card,
+.app-view .cms-edit-section,
+.app-view .cms-live-manual {
+  border-radius: 12px;
+}
+.app-view .cms-edit-section {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 4px 12px rgba(15, 23, 42, .04);
+}
+
+/* Sidebar nav — uppercase tracked labels, Inter weight */
+.app-view .admin-nav-group,
+.app-view .admin-sidebar-label {
+  font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: 10.5px;
+  text-transform: uppercase;
+}
+
+/* Form inputs — consistent radius + focus */
+.app-view input[type="text"],
+.app-view input[type="email"],
+.app-view input[type="password"],
+.app-view input[type="number"],
+.app-view input[type="url"],
+.app-view input[type="search"],
+.app-view input[type="color"],
+.app-view textarea,
+.app-view select {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  border-radius: 8px;
+}
+.app-view input:focus-visible,
+.app-view textarea:focus-visible,
+.app-view select:focus-visible {
+  outline: 2px solid var(--c-red);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+/* CMS live-manual editable preview — narrower lede + Inter */
+.app-view .cms-live-manual .cover.cover-slim {
+  padding: 32px 0 24px;
+  background: transparent;
+  border-bottom: 1px solid #e6e0d2;
+}
+.app-view .cms-live-manual .cover-eyebrow {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+.app-view .cms-live-manual .cover h1 {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: -0.022em;
+  color: var(--c-eerie-black, #191919);
+  margin: 0 0 8px;
+}
+.app-view .cms-live-manual .cover .cover-sub {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #4b5563;
+  margin: 0 0 16px;
+}
+.app-view .cms-live-manual .cover-meta {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12.5px;
+  color: #4b5563;
+}
+.app-view .cms-live-manual .cover-meta .label {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #6b7280;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+/* Section banner in editable preview — defang the heavy red bar
+   to a quiet header for the editor only. */
+.app-view .cms-live-manual .section-banner {
+  background: transparent;
+  padding: 24px 0 6px;
+  border: 0;
+}
+.app-view .cms-live-manual .section-banner .num {
+  color: var(--c-red);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+.app-view .cms-live-manual .section-banner h2 {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  color: var(--c-eerie-black, #191919);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.012em;
+  margin: 4px 0 0;
+}
+
+/* Editable section preview — tighter card chrome */
+.app-view .cms-edit-section .cms-section-controller {
+  background: #fafaf6;
+  border-bottom: 1px solid #e6e0d2;
+  padding: 10px 14px;
+}
+
+/* T22 — global contrast fixes outside .app-view and .docpilot-reader */
+
+/* /products PUBLISHED pill (axe: 3.68 #0b9050 on #e8f6ef → 4.5+) */
+.landing-product-card > span {
+  color: #04321f !important;
+  background: #c6f4d8 !important;
+  font-weight: 800 !important;
+}
+
+/* Suppress noisy unauthenticated /api/v2/auth/me 401 from console
+   by handling it client-side. We can't change console from CSS;
+   handled in AccountManagerCard.tsx separately. */
+
+/* T24 — global AA contrast fixes for buttons + pills across the back-office.
+   These are the patterns that recur on every admin page. */
+
+/* .btn-red — white on #ff1b23 was 3.86; bump to #c81420 + weight 700 + 13px */
+.btn-red,
+.app-view .btn-red,
+.company-admin-cms-link,
+.company-admin-btn,
+.company-admin-btn-primary {
+  background: #c81420 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  border-color: #c81420 !important;
+}
+.btn-red:hover,
+.app-view .btn-red:hover,
+.company-admin-cms-link:hover,
+.company-admin-btn:hover {
+  background: #a91017 !important;
+  color: #ffffff !important;
+  border-color: #a91017 !important;
+}
+
+/* Pills — published green-on-pale-green (3.45) → dark text */
+.pill,
+.published.pill,
+.theme-locked,
+.status-pill,
+.app-view .pill {
+  color: #04321f !important;
+  background: #c6f4d8 !important;
+  font-weight: 700 !important;
+}
+/* keep red pills' red */
+.pill.danger,
+.pill.warning,
+.pill.error { color: #7c1d1d !important; background: #fde2e2 !important; }
+.pill.draft,
+.pill.in-progress { color: #5b3a04 !important; background: #fceeb6 !important; }
+
+/* HOVER SAFETY: any button/anchor that ships with `color: white` MUST
+   keep white text on hover. This is the universal fix for the
+   "red-on-red invisible text on hover" bug the user flagged. */
+.btn-red:hover,
+.btn-red:focus,
+.btn-red:active,
+.app-view .btn-red:hover,
+.app-view .btn-red:focus,
+.company-client-shell .primary:hover,
+.company-client-shell .primary:focus,
+.company-client-shell .company-client-edit-bar-save:hover,
+.company-admin-cms-link:hover,
+.company-admin-cms-link:focus,
+.company-admin-btn:hover,
+.company-admin-btn:focus,
+[data-theme] .btn-red:hover,
+[data-theme] .btn-red:focus {
+  color: #ffffff !important;
+}
+
+/* Delete button — red text on transparent, on hover bg becomes red.
+   Keep white text on hover. */
+.btn-red.theme-delete:hover,
+.btn-red.theme-delete:focus,
+.btn-red[disabled]:hover { color: #ffffff !important; }
+
+/* T24.2 — residual admin contrast fixes */
+
+/* Template family card chip */
+.template-family-card-head span,
+.template-family-card-head .pill {
+  color: #04321f !important;
+  background: #c6f4d8 !important;
+}
+
+/* CMS section cover-eyebrow (#6b7280 on cream was 4.4) */
+.cover-eyebrow,
+.app-view .cover-eyebrow { color: #475569 !important; }
+
+/* Small danger buttons on media library */
+.btn-sm.danger,
+.danger.btn-sm,
+.btn-sm.btn.danger,
+.app-view .btn-sm.danger {
+  background: #c81420 !important;
+  color: #ffffff !important;
+  border-color: #c81420 !important;
+  font-weight: 700 !important;
+}
+
+/* Translations locale list small percent text */
+button[aria-label*="complete"] small,
+.app-view button[aria-label*="complete"] small {
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+button[aria-label*="complete"][aria-current="true"] small,
+.app-view button[aria-label*="complete"][aria-current="true"] small {
+  color: #475569 !important;
+}
+
+/* Integrations external links — too light gray */
+.app-view a[target="_blank"][rel*="noopener"] { color: #b91c1c !important; }
+.app-view a[target="_blank"][rel*="noopener"]:hover { color: #7c1d1d !important; }
+
+/* .muted in product/document tables — bump from #94a3b8 */
+.muted,
+.app-view .muted { color: #475569 !important; }
+.app-view tr .muted { color: #475569 !important; }
+
+/* T24.3 — translations residuals */
+
+/* Active locale "X%" small — DON'T force white; honour the existing
+   accent-soft bg with dark text. */
+button[aria-label*="complete"] small,
+button[aria-current="true"] small,
+.app-view button[aria-label*="complete"] small,
+.app-view button[aria-current="true"] small {
+  color: #475569 !important;
+}
+
+/* translation-content-label colour */
+.translation-content-label,
+.translation-content-label span,
+.translation-content-label code,
+.app-view .translation-content-label,
+.app-view .translation-content-label span,
+.app-view .translation-content-label code {
+  color: #475569 !important;
+  background: transparent !important;
+}

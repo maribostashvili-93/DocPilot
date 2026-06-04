@@ -1,0 +1,123 @@
+.company-cms-shell {
+  min-height: 100vh;
+  --brand-primary: #ff1b23;
+  --brand-accent: #63cdff;
+}
+
+.company-cms-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f1115;
+  color: #e8edf2;
+  font-family: var(--font-display);
+}
+
+.company-cms-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 10px clamp(16px, 4vw, 48px);
+  background: #11161c;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.company-cms-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.company-cms-logo,
+.company-cms-logo-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.company-cms-logo {
+  object-fit: cover;
+  background: rgba(255, 255, 255, .08);
+}
+
+.company-cms-logo-fallback {
+  background: var(--brand-primary, #ff1b23);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 17px;
+  letter-spacing: .04em;
+}
+
+.company-cms-kicker {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+}
+
+.company-cms-company-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.company-cms-topnav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.company-cms-topnav a,
+.company-cms-topnav button {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 999px;
+  color: #fff;
+  text-decoration: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.company-cms-topnav a:hover,
+.company-cms-topnav button:hover {
+  border-color: var(--brand-primary);
+}
+
+.company-cms-user-email {
+  font-size: 12px;
+  color: rgba(255, 255, 255, .65);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.company-cms-body {
+  min-height: calc(100vh - 60px);
+  background: var(--app-bg, #f4f7fa);
+}
+
+/* Make the legacy Admin's own .app-view background neutral inside tenant chrome */
+.company-cms-shell .app-view {
+  min-height: calc(100vh - 60px);
+}
+
+/* Hide the legacy admin app-header — we provide our own */
+.company-cms-shell .app-header {
+  display: none;
+}

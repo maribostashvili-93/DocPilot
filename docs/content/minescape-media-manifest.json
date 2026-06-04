@@ -1,0 +1,637 @@
+{
+  "images": [
+    {
+      "id": "media-1780070218080-555b83",
+      "alt": "default state",
+      "tags": [
+        "screenshot",
+        "2026-05-29",
+        "at",
+        "18.25.33.png"
+      ],
+      "path": "/images/minescape/default-state.png"
+    },
+    {
+      "id": "media-1780070218083-95c078",
+      "alt": "bet-placed-hover-on-a-box",
+      "tags": [
+        "screenshot",
+        "2026-05-29",
+        "at",
+        "18.26.18.png"
+      ],
+      "path": "/images/minescape/bet-placed-hover-on-a-box.png"
+    },
+    {
+      "id": "media-1780070218300-930258",
+      "alt": "aviator-minescape-multiple-tiles-open-cashout-active",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "mission in progress",
+        "opened tiles",
+        "multiple boxes opened",
+        "multiplier",
+        "cashout active",
+        "cashout amount",
+        "grid",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-multiple-tiles-open-cashout-active.png"
+    },
+    {
+      "id": "media-1780070218543-bff45b",
+      "alt": "aviator-minescape-auto-mode-win-state-infinite-rounds",
+      "tags": [
+        "tags: aviator-minescape",
+        "minescape",
+        "game ui",
+        "auto mode",
+        "autoplay",
+        "autobet",
+        "win state",
+        "results popup",
+        "payout",
+        "infinite rounds",
+        "stop autobet",
+        "loop",
+        "balance sufficient",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-auto-mode-win-state-infinite-rounds.png"
+    },
+    {
+      "id": "media-1780070218812-a3cec5",
+      "alt": "aviator-minescape-lose-state-mine-revealed",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "lose state",
+        "game over",
+        "mine revealed",
+        "bomb",
+        "failed mission",
+        "opened tiles",
+        "grid",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-lose-state-mine-revealed.png"
+    },
+    {
+      "id": "media-1780070219066-49ef76",
+      "alt": "aviator-minescape-auto-mode-selected-tiles-start-autobet",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "auto mode",
+        "autoplay",
+        "autobet",
+        "selected tiles",
+        "marked boxes",
+        "tile selection",
+        "start autobet",
+        "advanced settings",
+        "bet amount",
+        "grid",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-auto-mode-selected-tiles-start-autobet.png"
+    },
+    {
+      "id": "media-1780070219312-058d73",
+      "alt": "Screenshot 2026 05 29 at 18.28.59",
+      "tags": [
+        "screenshot",
+        "2026-05-29",
+        "at",
+        "18.28.59.png"
+      ],
+      "path": "/images/minescape/screenshot-2026-05-29-at-18-28-59.png"
+    },
+    {
+      "id": "media-1780070219555-8ed7cf",
+      "alt": "aviator-minescape-auto-mode-lose-state-continues",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "auto mode",
+        "autoplay",
+        "autobet",
+        "lose state",
+        "mine revealed",
+        "bomb",
+        "round lost",
+        "game continues",
+        "stop autobet",
+        "infinite rounds",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-auto-mode-lose-state-continues.png"
+    },
+    {
+      "id": "media-1780070219815-d2fcec",
+      "alt": "Screenshot 2026 05 29 at 18.30.03",
+      "tags": [
+        "screenshot",
+        "2026-05-29",
+        "at",
+        "18.30.03.png"
+      ],
+      "path": "/images/minescape/screenshot-2026-05-29-at-18-30-03.png"
+    },
+    {
+      "id": "media-1780070220044-2c76ac",
+      "alt": "aviator-minescape-auto-mode-advanced-settings",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "auto mode",
+        "autoplay",
+        "autobet",
+        "advanced settings",
+        "payout on win",
+        "number of bets",
+        "on win",
+        "on loss",
+        "stop on profit",
+        "stop on loss",
+        "start autobet",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-auto-mode-advanced-settings.png"
+    },
+    {
+      "id": "media-1780070220277-48dbd9",
+      "alt": "advanced settings",
+      "tags": [
+        "screenshot",
+        "2026-05-29",
+        "at",
+        "18.36.15.png"
+      ],
+      "path": "/images/minescape/advanced-settings.png"
+    },
+    {
+      "id": "media-1780070220531-c4ebc9",
+      "alt": "aviator-minescape-auto-mode-random-tile-selection",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "auto mode",
+        "autoplay",
+        "autobet",
+        "random selection",
+        "random tiles",
+        "tile selection",
+        "marked boxes",
+        "selected tiles",
+        "start autobet",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-auto-mode-random-tile-selection.png"
+    },
+    {
+      "id": "media-1780070220777-c1e806",
+      "alt": "aviator-minescape-auto-mode-advanced-settings-on-win-increase-5-percent-bets-10-remaining-2",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "auto mode",
+        "autoplay",
+        "autobet",
+        "advanced settings",
+        "on win",
+        "increase by",
+        "5 percent",
+        "number of bets",
+        "bets-10",
+        "remaining-2",
+        "stop autobet",
+        "win state",
+        "results popup",
+        "payout",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-auto-mode-advanced-settings-on-win-increase-5-percent-bets-10-remaining-2.png"
+    },
+    {
+      "id": "media-1780070221031-868ec9",
+      "alt": "aviator-minescape-auto-mode-advanced-settings-on-loss-increase-20-percent-not-started",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "auto mode",
+        "autoplay",
+        "autobet",
+        "advanced settings",
+        "on loss",
+        "increase by",
+        "20 percent",
+        "bet not placed",
+        "start autobet",
+        "selected tiles",
+        "tile selection",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-auto-mode-advanced-settings-on-loss-increase-20-percent-not-started.png"
+    },
+    {
+      "id": "media-1780070221272-a84615",
+      "alt": "advance settings",
+      "tags": [
+        "screenshot",
+        "2026-05-29",
+        "at",
+        "18.37.49.png"
+      ],
+      "path": "/images/minescape/advance-settings.png"
+    },
+    {
+      "id": "media-1780070221549-a0fbc1",
+      "alt": "aviator-minescape-auto-mode-advanced-settings-stop-on-profit-10-stop-on-loss-20",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "auto mode",
+        "autoplay",
+        "autobet",
+        "advanced settings",
+        "stop on profit",
+        "stop on loss",
+        "stop-on-profit-10-gel",
+        "stop-on-loss-20-gel",
+        "number of bets",
+        "payout on win",
+        "start autobet",
+        "selected tiles",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-auto-mode-advanced-settings-stop-on-profit-10-stop-on-loss-20.png"
+    },
+    {
+      "id": "media-1780067775886-29769d",
+      "alt": "aviator-minescape-default-screen",
+      "tags": [
+        "aviator-minescape",
+        "aviator",
+        "default",
+        "screen",
+        "game",
+        "ui",
+        "bet",
+        "setup"
+      ],
+      "path": "/images/minescape/aviator-minescape-default-screen.png"
+    },
+    {
+      "id": "media-1780065653573-f09200",
+      "alt": "aviator-minescape-bet-100-gel-potential-win-2425",
+      "tags": [
+        "aviator-minescape",
+        "aviator",
+        "game",
+        "ui",
+        "bet",
+        "amount",
+        "100",
+        "gel"
+      ],
+      "path": "/images/minescape/aviator-minescape-bet-100-gel-potential-win-2425.png"
+    },
+    {
+      "id": "media-1780065654396-0322df",
+      "alt": "aviator-minescape-burger-menu-open",
+      "tags": [
+        "aviator-minescape",
+        "aviator",
+        "game",
+        "ui",
+        "burger",
+        "menu",
+        "settings",
+        "sound"
+      ],
+      "path": "/images/minescape/aviator-minescape-burger-menu-open.png"
+    },
+    {
+      "id": "media-1780065655200-2cbc43",
+      "alt": "aviator-minescape-burger-menu-scrolled",
+      "tags": [
+        "aviator-minescape",
+        "aviator",
+        "game",
+        "ui",
+        "burger",
+        "menu",
+        "settings",
+        "music"
+      ],
+      "path": "/images/minescape/aviator-minescape-burger-menu-scrolled.png"
+    },
+    {
+      "id": "media-1780065655978-bc6f0b",
+      "alt": "aviator-minescape-bet-10-gel-potential-win-242-50",
+      "tags": [
+        "aviator-minescape",
+        "aviator",
+        "game",
+        "ui",
+        "bet",
+        "amount",
+        "10",
+        "gel"
+      ],
+      "path": "/images/minescape/aviator-minescape-bet-10-gel-potential-win-242-50.png"
+    },
+    {
+      "id": "media-1780065656736-496633",
+      "alt": "aviator-minescape-half-bet-button-bet-5-gel-potential-win-121-25",
+      "tags": [
+        "aviator-minescape",
+        "aviator",
+        "game",
+        "ui",
+        "bet",
+        "amount",
+        "5",
+        "gel"
+      ],
+      "path": "/images/minescape/aviator-minescape-half-bet-button-bet-5-gel-potential-win-121-25.png"
+    },
+    {
+      "id": "media-1780065658357-8ef3cb",
+      "alt": "aviator-minescape-max-bet-selected-400-gel",
+      "tags": [
+        "aviator-minescape",
+        "aviator",
+        "game",
+        "ui",
+        "max",
+        "bet",
+        "casino",
+        "amount"
+      ],
+      "path": "/images/minescape/aviator-minescape-max-bet-selected-400-gel.png"
+    },
+    {
+      "id": "media-1780065659155-e135c8",
+      "alt": "aviator-minescape-grid-size-36-mines-2",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "manual",
+        "mode",
+        "auto",
+        "grid"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-36-mines-2.png"
+    },
+    {
+      "id": "media-1780065659940-bbd3b7",
+      "alt": "aviator-minescape-grid-size-49-mines-3",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "manual",
+        "mode",
+        "auto",
+        "grid"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-49-mines-3.png"
+    },
+    {
+      "id": "media-1780065660760-1b991e",
+      "alt": "aviator-minescape-grid-size-64-mines-4",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "manual",
+        "mode",
+        "auto",
+        "grid"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-64-mines-4.png"
+    },
+    {
+      "id": "media-1780065661793-005897",
+      "alt": "aviator-minescape-grid-size-25-mines-3",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-25",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-25-mines-3.png"
+    },
+    {
+      "id": "media-1780065662612-6f233c",
+      "alt": "aviator-minescape-grid-size-25-mines-5",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-25",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-25-mines-5.png"
+    },
+    {
+      "id": "media-1780065663345-1ba8ae",
+      "alt": "aviator-minescape-grid-size-25-mines-10",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-25",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-25-mines-10.png"
+    },
+    {
+      "id": "media-1780065664155-c6d9a7",
+      "alt": "aviator-minescape-grid-size-25-mines-custom-placeholder-24",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-25",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-25-mines-custom-placeholder-24.png"
+    },
+    {
+      "id": "media-1780065664934-4916ef",
+      "alt": "aviator-minescape-grid-size-36-mines-2",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-36",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-36-mines-2-4916ef.png"
+    },
+    {
+      "id": "media-1780065665726-1122bb",
+      "alt": "aviator-minescape-grid-size-36-mines-5",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-36",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-36-mines-5.png"
+    },
+    {
+      "id": "media-1780065666538-d61e91",
+      "alt": "aviator-minescape-grid-size-36-mines-10",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-36",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-36-mines-10.png"
+    },
+    {
+      "id": "media-1780065667395-9ff724",
+      "alt": "aviator-minescape-grid-size-36-mines-15",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-36",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-36-mines-15.png"
+    },
+    {
+      "id": "media-1780065668202-75032e",
+      "alt": "aviator-minescape-grid-size-36-mines-custom-placeholder-35",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game",
+        "ui",
+        "grid",
+        "size",
+        "grid-size-36",
+        "number"
+      ],
+      "path": "/images/minescape/aviator-minescape-grid-size-36-mines-custom-placeholder-35.png"
+    },
+    {
+      "id": "media-1780065668997-232c63",
+      "alt": "aviator-minescape-bet-placed-hover-tile",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "bet placed",
+        "mission started",
+        "tile hover",
+        "box hover",
+        "highlight",
+        "unopened tile",
+        "cashout",
+        "potential win",
+        "grid"
+      ],
+      "path": "/images/minescape/aviator-minescape-bet-placed-hover-tile.png"
+    },
+    {
+      "id": "media-1780065669871-2be9b4",
+      "alt": "aviator-minescape-one-tile-open-multiplier-x1-01-cashout-active",
+      "tags": [
+        "aviator-minescape",
+        "minescape",
+        "game ui",
+        "mission in progress",
+        "box opened",
+        "opened tile",
+        "multiplier",
+        "x1.01",
+        "cashout active",
+        "cashout amount",
+        "1.01 gel",
+        "grid",
+        "provably fair"
+      ],
+      "path": "/images/minescape/aviator-minescape-one-tile-open-multiplier-x1-01-cashout-active.png"
+    },
+    {
+      "id": "media-1780065670756-f2545a",
+      "alt": "default screen with 1000 bet amount",
+      "tags": [
+        "screenshot",
+        "2026-05-29",
+        "at",
+        "18.25.33.png"
+      ],
+      "path": "/images/minescape/default-screen-with-1000-bet-amount.png"
+    }
+  ],
+  "extras": [
+    {
+      "id": "media-1780061968243-443d96",
+      "alt": "Loading screen",
+      "tags": [
+        "loading screen",
+        "game loader",
+        "game loader animation."
+      ],
+      "path": "/images/minescape/loading-screen.mov"
+    },
+    {
+      "id": "media-1780059894870-fdbb5a",
+      "alt": "clicking on box while bet isn't placed",
+      "tags": [
+        "start",
+        "round.gif"
+      ],
+      "path": "/images/minescape/clicking-on-box-while-bet-isn-t-placed.gif"
+    }
+  ]
+}

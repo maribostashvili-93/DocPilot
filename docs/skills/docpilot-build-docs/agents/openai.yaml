@@ -1,0 +1,4 @@
+interface:
+  display_name: "DocPilot Build Docs"
+  short_description: "Build editable DocPilot documentation."
+  default_prompt: "Use this skill to convert source documentation, screenshots, media manifests, and notes into DocPilot-ready editable documentation with sections, media, components, metadata, translations, and validation."

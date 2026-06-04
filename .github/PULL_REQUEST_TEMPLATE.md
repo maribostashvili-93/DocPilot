@@ -17,7 +17,7 @@ Closes #
 <!--
 How does a reviewer verify your change? Bullet list with concrete steps.
 Examples:
-  - [ ] Open /c/aviator, log in, hover any item in the "Recently updated" card. Text stays readable.
+  - [ ] Open /c/demo, log in, hover any item in the "Recently updated" card. Text stays readable.
   - [ ] Run `npm run typecheck` — no new errors.
   - [ ] DevTools Console clean after a full page load.
 -->

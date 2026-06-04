@@ -4,10 +4,10 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } fr
 import { DocReader } from './reader/DocReader';
 import { manualHtml, manualSections } from './data/manualContent';
 import { DEFAULT_TRANSLATIONS } from './data/seeds';
-import defaultmediaassetsJson from './../content/media-assets.json' with { type: 'json' };
-import defaultgamesJson from './../content/games.json' with { type: 'json' };
-import defaultdocsJson from './../content/docs.json' with { type: 'json' };
-import defaultaviatorbackofficesectionsJson from './../content/sections/aviator-backoffice.json' with { type: 'json' };
+import defaultmediaassetsJson from '../content/media-assets.json' with { type: 'json' };
+import defaultgamesJson from '../content/games.json' with { type: 'json' };
+import defaultdocsJson from '../content/docs.json' with { type: 'json' };
+import customSectionsJson from '../content/custom-sections.json' with { type: 'json' };
 import { auth, canRoleWrite, store } from './storage';
 import type { PersistenceStatus, UserRole, WritePermission } from './storage';
 import MarketingLanding from './marketing/MarketingLanding';
@@ -1083,11 +1083,7 @@ const DEFAULT_INTEGRATION_SECTIONS: SectionEntry[] = [
   ]),
 ];
 
-const DEFAULT_AVIATOR_BACKOFFICE_SECTIONS: SectionEntry[] = defaultaviatorbackofficesectionsJson as SectionEntry[];
-
-const DEFAULT_CUSTOM_SECTIONS: Record<string, SectionEntry[]> = {
-  'doc-aviator-back-office': DEFAULT_AVIATOR_BACKOFFICE_SECTIONS,
-};
+const DEFAULT_CUSTOM_SECTIONS: Record<string, SectionEntry[]> = customSectionsJson as Record<string, SectionEntry[]>;
 
 const DEFAULT_LOCALIZATION_KEYS = buildLocalizationKeysFromBundles([
   { doc: DEFAULT_DOCS[0], sections: DEFAULT_SECTIONS },

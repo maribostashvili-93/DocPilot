@@ -30,6 +30,7 @@ SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # Paths excluded from sync (tenant content). rsync --exclude patterns.
 EXCLUDES=(
   ".git/"
+  ".github/"
   ".docpilot-data/"
   ".docpilot-smoke-data/"
   ".vite/"
@@ -41,6 +42,7 @@ EXCLUDES=(
   "public/images/minescape/"
   "public/images/backoffice/"
   "public/images/manual/"
+  "HANDBOOK.md"
 )
 
 EXCLUDE_FLAGS=()

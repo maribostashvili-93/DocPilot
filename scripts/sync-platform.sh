@@ -52,6 +52,9 @@ EXCLUDES=(
   # Aviator content-seeding + probe scripts.
   "scripts/seed-minescape/"
   "scripts/probe-aviator-users.mjs"
+  # Internal planning / Batcave config.
+  ".batcave/"
+  "docs/"
 )
 
 EXCLUDE_FLAGS=()

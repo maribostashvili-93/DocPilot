@@ -65,11 +65,11 @@ npm run dev
 
 Two services start in one terminal: the API on port `4179` and the web app on port `5173`. When you see `VITE … ready`, open:
 
-**http://localhost:5173/c/aviator**
+**http://localhost:5173/c/demo**
 
 Log in with:
 
-- **Email:** `admin@aviator-studio.local`
+- **Email:** `admin@example.com`
 - **Password:** *(whatever you set in `.env`)*
 
 You're in. Click into a doc to read it; the user-menu has a password-change form.

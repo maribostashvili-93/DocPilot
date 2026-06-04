@@ -1,10 +1,10 @@
 // Idempotent boot-time seed. Runs on every server start; only inserts what's missing.
 //
 // Reads admin credentials from env vars:
-//   ADMIN_EMAIL    — defaults to admin@aviator-studio.local for local-dev parity
+//   ADMIN_EMAIL    — admin email; defaults to admin@example.com
 //   ADMIN_PASSWORD — required for first-time seed; subsequent boots ignore it
-//   COMPANY_SLUG   — defaults to 'aviator'
-//   COMPANY_NAME   — defaults to 'Aviator Studio'
+//   COMPANY_SLUG   — defaults to 'demo'
+//   COMPANY_NAME   — defaults to 'Demo Company'
 //
 // On a clean database: creates the company, the company-admin user, an initial
 // branding row, and copies server/seed-state.json into the CMS state file so the
@@ -21,12 +21,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
 const DEFAULTS = {
-  email: 'admin@aviator-studio.local',
+  email: 'admin@example.com',
   // No default password — the operator must set ADMIN_PASSWORD on first deploy.
-  // For local dev parity, set it to the same value as your local credential.
-  companySlug: 'aviator',
-  companyName: 'Aviator Studio',
-  adminName: 'Aviator Admin',
+  companySlug: 'demo',
+  companyName: 'Demo Company',
+  adminName: 'Platform Admin',
 };
 
 function ensureCompany(slug, name) {
@@ -55,9 +54,9 @@ function ensureCompany(slug, name) {
 
 function ensureCmsState() {
   // Copy server/seed-state.json into the live state file if the live file is
-  // missing or has no keys. Demo docs (Minescape, Aviator manual, integration,
-  // back-office) live in legacy JSON state, not SQLite — without this the docs
-  // grid in /c/<slug> renders empty even though /docs/:slug fallback works.
+  // missing or has no keys. Tenant docs live in legacy JSON state, not SQLite —
+  // without this the docs grid in /c/<slug> renders empty even though
+  // /docs/:slug fallback works.
   const seedPath = join(__dirname, 'seed-state.json');
   const stateFile = process.env.DOCPILOT_STATE_FILE
     || join(process.env.DOCPILOT_DATA_DIR || join(ROOT, '.docpilot-data'), 'cms-state.json');

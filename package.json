@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync-platform": "bash scripts/sync-platform.sh"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",

@@ -21,6 +21,7 @@ import DocAuthGate from './multitenant/DocAuthGate';
 import LandingPageEditor from './multitenant/LandingPageEditor';
 import TenantUsersPage from './multitenant/TenantUsersPage';
 import { TenantCMSEntry } from './multitenant/CompanyCMSShell';
+import { ResearchApp } from './multitenant/ResearchApp';
 import './multitenant/multitenant.css';
 import './multitenant/company-admin.css';
 import './multitenant/superadmin.css';
@@ -1094,6 +1095,7 @@ function App() {
         <Route path="/c/:slug/admin" element={<CompanyAdmin />} />
         <Route path="/c/:slug/admin/cms" element={<TenantCMSEntry><Admin /></TenantCMSEntry>} />
         <Route path="/c/:slug/admin/cms/:page" element={<TenantCMSEntry><Admin /></TenantCMSEntry>} />
+        <Route path="/c/:slug/admin/research/*" element={<TenantCMSEntry><ResearchApp /></TenantCMSEntry>} />
         <Route path="/admin/v2/*" element={<SuperAdminShell />} />
         <Route path="/login" element={<Navigate to="/admin/v2/login" replace />} />
         <Route path="/admin/login" element={<Navigate to="/admin/v2/login" replace />} />
@@ -1258,6 +1260,7 @@ export function Admin() {
   const location = useLocation();
   const basePath = useMemo(() => deriveAdminBasePath(location.pathname), [location.pathname]);
   const currentUser = auth.currentUser();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [companyName, setCompanyName] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [modal, setModal] = useState<ModalState>(null);
@@ -1375,6 +1378,10 @@ export function Admin() {
     if (synced !== translations) setTranslations(synced);
   }, [localizationKeys, setTranslations, translations]);
 
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [activePage]);
+
   // Resolve the tenant name for the workspace context strip. Falls back to
   // "DocPilot" on the standalone /admin mount where there is no company session.
   useEffect(() => {
@@ -1395,13 +1402,13 @@ export function Admin() {
 
   return (
     <AdminBasePathContext.Provider value={basePath}>
-      <main className="app-view" style={themePresetStyle(activeTheme)}>
+      <main className={`app-view${basePath.startsWith('/c/') ? ' tenant-cms-app-view' : ' legacy-admin-shell'}`} style={themePresetStyle(activeTheme)}>
         <header className="app-header">
           <AviatorLogo product="DocPilot" />
           <div className="user-info"><span className="user-name">{currentUser?.name ?? 'User'} · {roleLabel(currentUser?.role ?? 'partner')}</span><button className="btn-logout" onClick={logout}>Logout</button></div>
         </header>
-        <div className="app-layout">
-          <aside className="sidebar">
+        <div className={`app-layout${basePath.startsWith('/c/') ? ' tenant-cms-app-layout' : ' legacy-admin-layout'}${sidebarOpen ? ' tenant-cms-layout-nav-open' : ''}`}>
+          <aside id="tenant-cms-sidebar" className={`sidebar${basePath.startsWith('/c/') ? ' tenant-cms-sidebar' : ''}${sidebarOpen ? ' is-open' : ''}`}>
             <div className="sidebar-section">Content</div>
             <AdminLink page="dashboard" label="Dashboard" icon="▣" />
             <AdminLink page="products" label="Products" icon="◈" />
@@ -1411,11 +1418,21 @@ export function Admin() {
             <div className="sidebar-section spacer">Delivery</div>
             <AdminLink page="translations" label="Translations" icon="◎" />
             <AdminLink page="publishing" label="Publishing" icon="✓" />
+            {basePath.startsWith('/c/') && <ResearchNavLink slug={basePath.match(/^\/c\/([^/]+)/)?.[1] ?? ''} />}
             <div className="sidebar-section spacer">Tenant</div>
             <AdminLink page="landing" label="Landing page" icon="◔" />
             <AdminLink page="users" label="Users" icon="◉" />
           </aside>
-          <section className="content">
+          {basePath.startsWith('/c/') ? <button type="button" className={`tenant-cms-sidebar-overlay${sidebarOpen ? ' is-visible' : ''}`} aria-label="Close navigation" onClick={() => setSidebarOpen(false)} /> : null}
+          <section className={`content${basePath.startsWith('/c/') ? ' tenant-cms-content' : ''}`}>
+            {basePath.startsWith('/c/') ? (
+              <div className="tenant-cms-mobile-bar">
+                <button type="button" className="tenant-cms-mobile-toggle" onClick={() => setSidebarOpen((value) => !value)} aria-expanded={sidebarOpen} aria-controls="tenant-cms-sidebar">
+                  <span aria-hidden>☰</span>
+                  <strong>Menu</strong>
+                </button>
+              </div>
+            ) : null}
             <PersistenceStatusBanner status={persistenceStatus} />
             <AdminContextBar companyName={companyName} product={activeProduct} documentCount={activeProductDocs.length} hasDraftWorkflowState={hasDraftWorkflowState} />
             {persistenceStatus === 'server' ? content : <PersistenceUnavailable status={persistenceStatus} />}
@@ -1457,22 +1474,34 @@ function Dashboard({ products, sections, translations, localizationKeys, release
   return (
     <>
       <ViewHeader title="DocPilot Dashboard" subtitle="Product-aware workspace for docs, translations, and versioned publishing" />
-      <section className="dashboard-hero">
-        <div>
+      <section className="dashboard-hero tenant-dashboard-hero">
+        <div className="tenant-dashboard-hero-copy">
           <div className="eyebrow">Selected Product</div>
           <h2>{selectedProduct?.name ?? 'No product selected'}</h2>
           <p>{selectedProduct?.description ?? 'Create a product to begin managing documentation.'}</p>
-          <div className="hero-actions">
-            <Link className="btn btn-red" to={selectedProduct ? `/products/${selectedProduct.id}` : '/products'}>View Product Docs</Link>
-            <Link className="btn" to={`${basePath}/sections`}>Edit Content</Link>
+          <div className="tenant-dashboard-hero-meta">
+            <span>{selectedDocs.length} docs mapped</span>
+            <span>{sections.length} editable sections</span>
+            <span>{reviewCount} in review</span>
+          </div>
+          <div className="hero-actions tenant-dashboard-hero-actions">
+            <Link className="btn btn-red ds-btn ds-btn-primary" to={selectedProduct ? `/products/${selectedProduct.id}` : '/products'}>View Product Docs</Link>
+            <Link className="btn ds-btn ds-btn-secondary" to={`${basePath}/sections`}>Edit Content</Link>
           </div>
         </div>
-        <label className="game-switcher">
-          <span>Product Selection</span>
-          <select value={selectedProduct?.id ?? ''} onChange={(event) => setSelectedProductId(event.target.value)}>
-            {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
-          </select>
-        </label>
+        <div className="tenant-dashboard-hero-panel ds-card ds-card-feature">
+          <label className="game-switcher">
+            <span>Product Selection</span>
+            <select value={selectedProduct?.id ?? ''} onChange={(event) => setSelectedProductId(event.target.value)}>
+              {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
+            </select>
+          </label>
+          <div className="tenant-dashboard-hero-status">
+            <span className="ds-status ds-status-info">Translation {translationProgress}%</span>
+            <span className="ds-status ds-status-warning">{lowLanguages.length} low locales</span>
+            <span className="ds-status ds-status-neutral">{latestRelease ? latestRelease.status : 'no snapshot'}</span>
+          </div>
+        </div>
       </section>
       <div className="kpi-grid">
         <Kpi label="Product Docs" value={String(selectedDocs.length)} meta="Game, back-office, integration, operations" />
@@ -1489,8 +1518,20 @@ function Dashboard({ products, sections, translations, localizationKeys, release
           </div>
         </Card>
         <Card title="Translation Rate By Language">
-          <div className="translation-bars">
-            {languageBars.map((entry) => <ProgressRow key={entry.code} label={`${entry.language} (${entry.code})`} value={getTranslationProgress(entry, localizationKeys)} />)}
+          <div className="translation-bars translation-bars-collapsible">
+            {languageBars.slice(0, 6).map((entry) => (
+              <ProgressRow key={entry.code} label={`${entry.language} (${entry.code})`} value={getTranslationProgress(entry, localizationKeys)} />
+            ))}
+            {languageBars.length > 6 ? (
+              <details className="translation-bars-more">
+                <summary>Show all languages ({languageBars.length})</summary>
+                <div className="translation-bars-more-list">
+                  {languageBars.slice(6).map((entry) => (
+                    <ProgressRow key={entry.code} label={`${entry.language} (${entry.code})`} value={getTranslationProgress(entry, localizationKeys)} />
+                  ))}
+                </div>
+              </details>
+            ) : null}
           </div>
         </Card>
       </div>
@@ -2402,24 +2443,6 @@ function SectionsPage({ bundles, openModal, toast, revisionHistories, setRevisio
   return (
     <>
       <ViewHeader title="Content Editor" subtitle="Edit every documentation stream in the rendered view your users and internal teams read." action={<button className="btn btn-red" onClick={addSection}>+ Add Section</button>} />
-      <div className="doc-tabs">
-        {bundles.map((bundle) => (
-          <button className={bundle.doc.id === doc.id ? 'active' : ''} key={bundle.doc.id} onClick={() => { cleanupPointerSectionDrag(); setActiveDocId(bundle.doc.id); setEditingId(null); setSelectedSectionId(null); setCollapsedSectionIds([]); setDocRevision({ past: [], future: [] }); }}>
-            <span>{bundle.doc.type}</span>
-            <strong>{bundle.doc.title}</strong>
-            <em>v{bundle.doc.version}</em>
-          </button>
-        ))}
-      </div>
-      <div className="editor-utility-bar">
-        <label className="field"><span>Find section</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, body, metadata, owner, status, markers" /></label>
-        <div className="editor-health">
-          <span>{visibleSections.length} visible</span>
-          <span>{sections.length} sections</span>
-          <span>{sections.filter((section) => section.status === 'published').length} published</span>
-          <span>{sections.filter((section) => section.status === 'draft' || section.status === 'review').length} needs work</span>
-        </div>
-      </div>
       <DocumentationActionBar
         doc={doc}
         selectedSection={selectedSection}
@@ -2446,6 +2469,66 @@ function SectionsPage({ bundles, openModal, toast, revisionHistories, setRevisio
         elementsLibraryOpen={elementsLibraryOpen}
         toggleElementsLibrary={() => setElementsLibraryOpen((value) => !value)}
       />
+      <div className="cms-editor-frame">
+        <aside className="cms-editor-tree">
+          <div className="cms-editor-panel-head">
+            <div>
+              <span>Document Tree</span>
+              <strong>Structure</strong>
+            </div>
+          </div>
+          <label className="field cms-editor-search">
+            <span>Find section</span>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, body, metadata, owner, status, markers" />
+          </label>
+          <div className="doc-tabs cms-editor-doc-tabs">
+            {bundles.map((bundle) => (
+              <button className={bundle.doc.id === doc.id ? 'active' : ''} key={bundle.doc.id} onClick={() => { cleanupPointerSectionDrag(); setActiveDocId(bundle.doc.id); setEditingId(null); setSelectedSectionId(null); setCollapsedSectionIds([]); setDocRevision({ past: [], future: [] }); }}>
+                <span>{bundle.doc.type}</span>
+                <strong>{bundle.doc.title}</strong>
+                <em>v{bundle.doc.version}</em>
+              </button>
+            ))}
+          </div>
+          <div className="cms-editor-tree-summary editor-health">
+            <span>{visibleSections.length} visible</span>
+            <span>{sections.length} sections</span>
+            <span>{sections.filter((section) => section.status === 'published').length} published</span>
+            <span>{sections.filter((section) => section.status === 'draft' || section.status === 'review').length} needs work</span>
+          </div>
+          <details className="cms-section-tree-disclosure">
+            <summary>
+              <span>Sections</span>
+              <strong>{visibleSections.length}</strong>
+            </summary>
+            <nav className="cms-section-tree" aria-label={`${doc.title} sections`}>
+              {visibleSections.length ? visibleSections.map((section) => {
+                const isSelected = selectedSection?.id === section.id;
+                const isEditing = editingId === section.id;
+                const isCollapsed = collapsedSectionSet.has(section.id);
+                return (
+                  <button
+                    key={section.id}
+                    type="button"
+                    className={`cms-section-tree-item ${isSelected ? 'active' : ''} ${isEditing ? 'editing' : ''}`}
+                    onClick={() => {
+                      setSelectedSectionId(section.id);
+                      if (isCollapsed) setCollapsedSectionIds((items) => items.filter((id) => id !== section.id));
+                    }}
+                  >
+                    <div className="cms-section-tree-row">
+                      <strong>{section.number}</strong>
+                      <Pill status={section.status} />
+                    </div>
+                    <span>{section.title}</span>
+                    <em>{section.owner}</em>
+                  </button>
+                );
+              }) : <div className="cms-section-tree-empty">No sections match the current filter.</div>}
+            </nav>
+          </details>
+        </aside>
+        <section className="cms-editor-canvas">
       {elementsLibraryOpen ? (
         <ElementsLibraryPanel
           close={() => {
@@ -2538,6 +2621,66 @@ function SectionsPage({ bundles, openModal, toast, revisionHistories, setRevisio
             />
           ))}
         </main>
+      </div>
+        </section>
+        <aside className="cms-editor-properties">
+          <div className="cms-editor-panel-head">
+            <div>
+              <span>Properties</span>
+              <strong>{selectedSection ? `${selectedSection.number} ${selectedSection.title}` : 'No section selected'}</strong>
+            </div>
+            {selectedSection ? <Pill status={selectedSection.status} /> : null}
+          </div>
+          <div className="cms-editor-property-card">
+            <span>Document</span>
+            <strong>{doc.title}</strong>
+            <em>{doc.type} · v{doc.version}</em>
+          </div>
+          {selectedSection ? (
+            <>
+              <div className="cms-editor-property-card">
+                <span>Section</span>
+                <strong>{selectedSection.title}</strong>
+                <em>{selectedSection.number} · {selectedSection.slug}</em>
+              </div>
+              <div className="cms-editor-property-grid">
+                <div className="cms-editor-property-card">
+                  <span>Owner</span>
+                  <strong>{selectedSection.owner}</strong>
+                  <em>Reviewer {selectedSection.reviewer || selectedSection.owner}</em>
+                </div>
+                <div className="cms-editor-property-card">
+                  <span>Updated</span>
+                  <strong>{selectedSection.updatedAt}</strong>
+                  <em>{selectedSection.status}</em>
+                </div>
+              </div>
+              <div className="cms-editor-side-actions">
+                <button className="btn btn-sm btn-red" type="button" onClick={() => publishOrUpdateSection(selectedSection)}>
+                  {selectedSection.status === 'published' ? 'Update' : 'Publish'}
+                </button>
+                <button className="btn btn-sm btn-ghost" type="button" onClick={() => saveSectionAsDraft(selectedSection)}>Save Draft</button>
+                <button className="btn btn-sm btn-ghost" type="button" onClick={() => {
+                  setCollapsedSectionIds((items) => items.filter((id) => id !== selectedSection.id));
+                  setEditingId(selectedSection.id);
+                }}>Edit Section</button>
+                <button className="btn btn-sm btn-ghost" type="button" onClick={() => duplicateSection(selectedSection)}>Duplicate</button>
+                <button className="btn btn-sm btn-ghost danger" type="button" onClick={() => deleteSection(selectedSection)}>Delete</button>
+              </div>
+            </>
+          ) : (
+            <div className="cms-editor-property-card">
+              <span>Selection</span>
+              <strong>Select a section</strong>
+              <em>Use the left tree to focus editing and workflow actions.</em>
+            </div>
+          )}
+          <div className="cms-editor-property-card">
+            <span>Elements</span>
+            <strong>{elementsLibraryOpen ? 'Library open' : 'Library closed'}</strong>
+            <em>{selectedLibraryKind ? `${selectedLibraryKind} selected for insertion.` : 'Open the toolbar library to drag doc components into the active section.'}</em>
+          </div>
+        </aside>
       </div>
     </>
   );
@@ -3317,8 +3460,14 @@ function MediaLibraryPage({ assets, setAssets, bundles, openModal, toast, append
     <>
       <ViewHeader
         title="Media Library"
-        subtitle="Upload and manage images, videos, PDFs, spreadsheets, and data files used across DocPilot content."
-        action={<label className={`btn btn-red media-upload-cta${uploadProgress.active ? ' is-disabled' : ''}`} aria-disabled={uploadProgress.active || undefined}>+ Upload<input type="file" multiple aria-label="Upload media files" accept="image/*,video/*,application/pdf,.csv,.xls,.xlsx" disabled={uploadProgress.active} onChange={upload} /></label>}
+        subtitle="Bring images, video, documents, and data into one reusable asset workspace for every DocPilot document."
+        action={
+          <label className={`btn btn-red media-upload-cta${uploadProgress.active ? ' is-disabled' : ''}`} aria-disabled={uploadProgress.active || undefined}>
+            <span className="media-upload-cta-kicker">New asset</span>
+            <strong>Upload files</strong>
+            <input type="file" multiple aria-label="Upload media files" accept="image/*,video/*,application/pdf,.csv,.xls,.xlsx" disabled={uploadProgress.active} onChange={upload} />
+          </label>
+        }
       />
       {uploadProgress.active ? (
         <div className="media-upload-progress" role="status" aria-live="polite">
@@ -3330,8 +3479,8 @@ function MediaLibraryPage({ assets, setAssets, bundles, openModal, toast, append
         </div>
       ) : null}
       <div className="media-library-toolbar">
-        <label className="field wide"><span>Search</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filename, tags, owner, mime type…" /></label>
-        <Select name="kind" label="Type" value={kind} options={['all', 'image', 'video', 'document', 'data', 'other']} onChange={(next) => setKind(next as typeof kind)} />
+        <label className="field wide"><span>Search library</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search filenames, tags, owners, or MIME type" /></label>
+        <Select name="kind" label="Asset type" value={kind} options={['all', 'image', 'video', 'document', 'data', 'other']} onChange={(next) => setKind(next as typeof kind)} />
       </div>
       <div className="media-asset-grid media-library-grid">
         {filtered.length ? filtered.map((asset) => {
@@ -3360,7 +3509,7 @@ function MediaLibraryPage({ assets, setAssets, bundles, openModal, toast, append
               </div>
             </div>
           );
-        }) : assets.length ? <EmptyState title="No matching media" message="Adjust the search or type filter to show more assets." /> : <EmptyState title="No media yet" message="Upload files to populate the media library." />}
+        }) : assets.length ? <EmptyState title="No matching assets" message="Try a broader search term or switch the asset type filter." /> : <EmptyState title="Library is empty" message="Upload images, video, PDFs, spreadsheets, or data files to start reusing assets across sections and components." />}
       </div>
     </>
   );
@@ -3417,7 +3566,7 @@ function PersistenceUnavailable({ status }: { status: PersistenceStatus }) {
 function AdminContextBar({ companyName, product, documentCount, hasDraftWorkflowState }: { companyName?: string | null; product?: ProductEntry; documentCount: number; hasDraftWorkflowState: boolean }) {
   return (
     <div className="admin-context-bar" aria-label="Active workspace context">
-      <div>
+      <div className="documentation-action-summary">
         <span>Workspace</span>
         <strong>{companyName ?? 'DocPilot'}</strong>
       </div>
@@ -3545,6 +3694,20 @@ function AdminLink({ page, label, icon }: { page: string; label: string; icon: s
   const basePath = useAdminBasePath();
   const currentPage = params.page ?? 'dashboard';
   return <Link className={`nav-link ${currentPage === page ? 'active' : ''}`} to={`${basePath}/${page}`}><span>{icon}</span>{label}</Link>;
+}
+
+function ResearchNavLink({ slug }: { slug: string }) {
+  const loc = useLocation();
+  const researchPath = `/c/${slug}/admin/research`;
+  const isActive = loc.pathname.startsWith(researchPath);
+  return (
+    <>
+      <div className="sidebar-section spacer">Intelligence</div>
+      <Link className={`nav-link ${isActive ? 'active' : ''}`} to={researchPath}>
+        <span>✦</span>AI Research Center
+      </Link>
+    </>
+  );
 }
 
 function DocumentForm({ doc, docs, products, selectedProductId, save, close }: { doc?: DocEntry; docs: DocEntry[]; products: ProductEntry[]; selectedProductId: string; save: (doc: DocEntry) => void; close: () => void }) {
@@ -3690,8 +3853,9 @@ function DocumentationActionBar({ doc, selectedSection, addSection, editSection,
         <span>{doc.title} · v{doc.version}</span>
         <strong>{selectedSection ? `${selectedSection.number} ${selectedSection.title}` : 'No section selected'}</strong>
       </div>
-      {selectedSection ? <Pill status={selectedSection.status} /> : null}
+      {selectedSection ? <div className="documentation-action-status"><Pill status={selectedSection.status} /></div> : null}
       <div className="documentation-action-buttons">
+        <div className="documentation-action-cluster documentation-action-cluster-history">
         <div className="revision-menu">
           <button
             className={`btn btn-sm btn-ghost ${showHistory ? 'active' : ''}`}
@@ -3731,15 +3895,20 @@ function DocumentationActionBar({ doc, selectedSection, addSection, editSection,
           ) : null}
         </div>
         <RevisionButtons undo={undoRevision} redo={redoRevision} canUndo={canUndo} canRedo={canRedo} label="Document revision history" />
-        <button className={`btn btn-sm btn-ghost ${elementsLibraryOpen ? 'active' : ''}`} type="button" onClick={toggleElementsLibrary} aria-pressed={elementsLibraryOpen}>Elements</button>
-        <button className="btn btn-sm btn-ghost" type="button" onClick={collapseAllSections} disabled={sectionCount === 0 || collapsedCount === sectionCount}>Collapse All</button>
-        <button className="btn btn-sm btn-ghost" type="button" onClick={expandAllSections} disabled={collapsedCount === 0}>Expand All</button>
-        <button className="btn btn-sm btn-red" type="button" disabled={!selectedSection} onClick={() => selectedSection && publishOrUpdate(selectedSection)}>{primaryLabel}</button>
-        <button className="btn btn-sm btn-ghost" type="button" disabled={!selectedSection} onClick={() => selectedSection && saveAsDraft(selectedSection)}>Save Draft</button>
-        <button className="btn btn-sm btn-ghost" type="button" disabled={!selectedSection} onClick={() => selectedSection && editSection(selectedSection)}>Edit</button>
-        <button className="btn btn-sm btn-ghost" type="button" disabled={!selectedSection} onClick={() => selectedSection && duplicateSection(selectedSection)}>Duplicate</button>
-        <button className="btn btn-sm btn-ghost danger" type="button" disabled={!selectedSection} onClick={() => selectedSection && deleteSection(selectedSection)} aria-label={selectedSection ? `Delete ${selectedSection.title}` : 'Delete selected section'}><span className="trash-icon" aria-hidden="true" /></button>
-        <button className="btn btn-sm" type="button" onClick={addSection}>+ Add Section</button>
+        </div>
+        <div className="documentation-action-cluster">
+          <button className={`btn btn-sm btn-ghost ${elementsLibraryOpen ? 'active' : ''}`} type="button" onClick={toggleElementsLibrary} aria-pressed={elementsLibraryOpen}>Elements</button>
+          <button className="btn btn-sm btn-ghost" type="button" onClick={collapseAllSections} disabled={sectionCount === 0 || collapsedCount === sectionCount}>Collapse All</button>
+          <button className="btn btn-sm btn-ghost" type="button" onClick={expandAllSections} disabled={collapsedCount === 0}>Expand All</button>
+        </div>
+        <div className="documentation-action-cluster documentation-action-cluster-primary">
+          <button className="btn btn-sm btn-red" type="button" disabled={!selectedSection} onClick={() => selectedSection && publishOrUpdate(selectedSection)}>{primaryLabel}</button>
+          <button className="btn btn-sm btn-ghost" type="button" disabled={!selectedSection} onClick={() => selectedSection && saveAsDraft(selectedSection)}>Save Draft</button>
+          <button className="btn btn-sm btn-ghost" type="button" disabled={!selectedSection} onClick={() => selectedSection && editSection(selectedSection)}>Edit</button>
+          <button className="btn btn-sm btn-ghost" type="button" disabled={!selectedSection} onClick={() => selectedSection && duplicateSection(selectedSection)}>Duplicate</button>
+          <button className="btn btn-sm btn-ghost danger" type="button" disabled={!selectedSection} onClick={() => selectedSection && deleteSection(selectedSection)} aria-label={selectedSection ? `Delete ${selectedSection.title}` : 'Delete selected section'}><span className="trash-icon" aria-hidden="true" /></button>
+          <button className="btn btn-sm" type="button" onClick={addSection}>+ Add Section</button>
+        </div>
       </div>
     </div>
   );

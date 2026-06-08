@@ -1,0 +1,4 @@
+interface:
+  display_name: "DocPilot UI Consistency Enforcer"
+  short_description: "Audit UI consistency and regressions"
+  default_prompt: "Use this skill to audit DocPilot UI/CSS consistency, detect regressions, and enforce shared component and responsive rules."

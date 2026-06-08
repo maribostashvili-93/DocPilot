@@ -201,6 +201,14 @@
   --c-strong-blue: var(--ds-blue-700);
   --c-green: var(--ds-green-500);
 
+  /* Workflow status tokens */
+  --ds-status-approved-bg: var(--ds-status-info-bg);
+  --ds-status-approved-fg: var(--ds-status-info-fg);
+  --ds-status-staged-bg: var(--ds-amber-50);
+  --ds-status-staged-fg: var(--ds-amber-800);
+  --ds-status-rolled-back-bg: var(--ds-status-neutral-bg);
+  --ds-status-rolled-back-fg: var(--ds-status-neutral-fg);
+
   --font-display: var(--ds-font-display);
   --font-body: var(--ds-font-body);
   --font-mono: var(--ds-font-mono);

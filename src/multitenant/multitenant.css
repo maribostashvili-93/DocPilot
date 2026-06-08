@@ -1853,7 +1853,7 @@
 .landing-editor-grid {
   display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-@media (max-width: 1000px) { .landing-editor-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .landing-editor-grid { grid-template-columns: 1fr; } }
 .landing-editor-card {
   background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
   padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;

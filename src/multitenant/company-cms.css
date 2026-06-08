@@ -12,9 +12,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0f1115;
-  color: #e8edf2;
-  font-family: var(--font-display);
+  background: var(--ds-slate-950);
+  color: var(--ds-slate-200);
+  font-family: var(--ds-font-display);
 }
 
 .company-cms-topbar {
@@ -23,12 +23,12 @@
   justify-content: space-between;
   gap: 24px;
   padding: 10px clamp(16px, 4vw, 48px);
-  background: #11161c;
+  background: var(--ds-slate-900);
   color: #fff;
   border-bottom: 1px solid rgba(255, 255, 255, .08);
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: var(--ds-z-topbar);
 }
 
 .company-cms-topbar-brand {
@@ -55,27 +55,27 @@
 }
 
 .company-cms-logo-fallback {
-  background: var(--brand-primary, #ff1b23);
+  background: var(--brand-primary, var(--ds-accent-primary));
   color: #fff;
-  font-family: var(--font-display);
-  font-weight: 900;
+  font-family: var(--ds-font-display);
+  font-weight: var(--ds-font-weight-black);
   font-size: 17px;
   letter-spacing: .04em;
 }
 
 .company-cms-kicker {
-  font-family: var(--font-display);
+  font-family: var(--ds-font-display);
   font-size: 10px;
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: var(--brand-accent);
+  color: var(--brand-accent, var(--ds-accent-secondary));
   line-height: 1.2;
 }
 
 .company-cms-company-name {
-  font-family: var(--font-display);
+  font-family: var(--ds-font-display);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: var(--ds-font-weight-heavy);
   color: #fff;
   line-height: 1.1;
 }
@@ -90,14 +90,14 @@
 
 .company-cms-topnav a,
 .company-cms-topnav button {
-  font-family: var(--font-display);
+  font-family: var(--ds-font-display);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: var(--ds-font-weight-heavy);
   letter-spacing: .06em;
   text-transform: uppercase;
   padding: 8px 14px;
   border: 1px solid rgba(255, 255, 255, .14);
-  border-radius: 999px;
+  border-radius: var(--ds-radius-pill);
   color: #fff;
   text-decoration: none;
   background: transparent;
@@ -124,13 +124,13 @@
 }
 
 .company-cms-body {
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - var(--ds-topbar-height-cms));
   background: transparent;
 }
 
 /* Make the legacy Admin's own .app-view background neutral inside tenant chrome */
 .company-cms-shell .app-view {
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - var(--ds-topbar-height-cms));
 }
 
 /* Hide the legacy admin app-header — we provide our own */
@@ -146,12 +146,12 @@
 }
 
 .company-cms-topbar {
-  min-height: 72px;
+  min-height: var(--ds-topbar-height-cms);
   padding: 12px clamp(18px, 4vw, 32px);
   background: rgba(14, 19, 26, 0.94);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(255, 255, 255, .08);
-  box-shadow: 0 14px 36px rgba(9, 14, 21, .18);
+  box-shadow: var(--ds-shadow-md);
 }
 
 .company-cms-company-meta {
@@ -216,11 +216,11 @@
   max-height: none;
   overflow: visible;
   align-self: start;
-  padding: 20px 16px;
+  padding: var(--ds-space-5) var(--ds-space-4);
   border: 1px solid rgba(255, 255, 255, .06);
-  border-radius: 24px;
+  border-radius: var(--ds-radius-2xl);
   background: linear-gradient(180deg, rgba(17, 22, 30, .98), rgba(20, 26, 35, .94));
-  box-shadow: 0 22px 48px rgba(12, 16, 23, .24);
+  box-shadow: var(--ds-shadow-lg);
 }
 
 .company-cms-shell .tenant-cms-sidebar .sidebar-section {
@@ -252,10 +252,10 @@
   padding: 0 0 20px;
 }
 
-@media (min-width: 981px) {
+@media (min-width: 1025px) {
   .company-cms-shell .tenant-cms-app-view {
     height: auto;
-    min-height: calc(100vh - 72px);
+    min-height: calc(100vh - var(--ds-topbar-height-cms));
     overflow: visible;
   }
 
@@ -276,7 +276,7 @@
   box-shadow: 0 16px 30px rgba(21, 32, 44, .06);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .company-cms-shell .tenant-cms-app-layout {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -296,7 +296,7 @@
 
 .company-cms-shell .tenant-cms-sidebar .sidebar-section {
   padding: 14px 14px 4px;
-  font-family: var(--ds-font-display, var(--font-display));
+  font-family: var(--ds-font-display);
   font-size: 9.5px;
   font-weight: 900;
   letter-spacing: 0.16em;
@@ -324,7 +324,7 @@
   padding: 0 12px;
   border-radius: 12px;
   color: rgba(215, 225, 235, 0.8);
-  font-family: var(--ds-font-body, var(--font-body));
+  font-family: var(--ds-font-body);
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0;
@@ -353,7 +353,7 @@
 }
 
 .company-cms-kicker {
-  font-family: var(--ds-font-display, var(--font-display));
+  font-family: var(--ds-font-display);
   font-size: 9.5px;
   letter-spacing: 0.18em;
   font-weight: 800;
@@ -363,7 +363,7 @@
   letter-spacing: -0.02em;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   /* Keep topbar as a single compact row — never stack to column.
      Stacking made the topbar 200px+ tall, causing the fixed-position
      mobile sidebar (top: 84px) to render inside the topbar area. */

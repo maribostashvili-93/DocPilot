@@ -372,6 +372,11 @@ export default function CompanyClientArea(): JSX.Element {
         </div>
 
         <div className="company-client-header-actions">
+          {editMode ? (
+            <span className={`company-client-edit-status ${dirty ? 'is-dirty' : 'is-clean'}`}>
+              {dirty ? 'Unsaved changes' : 'Editor synced'}
+            </span>
+          ) : null}
           <button
             type="button"
             className="company-client-theme-toggle"
@@ -531,8 +536,11 @@ function BrandingPanel({
   return (
     <section className="company-client-branding-panel" aria-label="Branding">
       <header className="company-client-panel-header">
-        <h2>Branding</h2>
-        <span className="company-client-panel-hint">Visible to everyone in your company</span>
+        <div>
+          <h2>Branding</h2>
+          <span className="company-client-panel-hint">Visible to everyone in your company</span>
+        </div>
+        <span className="ds-status ds-status-info">Live theme</span>
       </header>
       <div className="company-client-branding-grid">
         <label className="company-client-edit-field">
@@ -576,6 +584,16 @@ function BrandingPanel({
             />
           </div>
         </label>
+        <div className="company-client-brand-preview ds-card ds-card-feature">
+          <span className="company-client-brand-preview-kicker">Preview</span>
+          {value.logoUrl ? (
+            <img className="company-client-brand-preview-logo" src={value.logoUrl} alt="" />
+          ) : (
+            <span className="company-client-brand-preview-fallback" style={{ background: value.primaryColor || FALLBACK_PRIMARY }}>D</span>
+          )}
+          <strong style={{ color: value.primaryColor || FALLBACK_PRIMARY }}>Brand portal header</strong>
+          <em style={{ color: value.accentColor || FALLBACK_ACCENT }}>Primary and accent colors are applied across the tenant shell and client portal cards.</em>
+        </div>
       </div>
     </section>
   );
@@ -653,6 +671,10 @@ function ClientAreaBody({
       <section className="company-client-welcome">
         {editMode ? (
           <div className="company-client-welcome-edit">
+            <div className="company-client-edit-section-head">
+              <span className="company-client-edit-section-kicker">Hero</span>
+              <strong>Landing welcome copy</strong>
+            </div>
             <label className="company-client-edit-field">
               <span>Kicker</span>
               <input
@@ -702,10 +724,13 @@ function ClientAreaBody({
       <div className="company-client-grid">
         <section className="company-client-docs-panel" aria-label="Documents">
           <header className="company-client-panel-header">
-            <h2>Documents</h2>
-            <span className="company-client-panel-count">
-              {editMode ? `${docs.length} editable` : `${filteredDocs.length} of ${docs.length}`}
-            </span>
+            <div>
+              <h2>Documents</h2>
+              <span className="company-client-panel-count">
+                {editMode ? `${docs.length} editable` : `${filteredDocs.length} of ${docs.length}`}
+              </span>
+            </div>
+            {editMode ? <span className="ds-status ds-status-warning">Editable collection</span> : null}
           </header>
           {!editMode && (
             <div className="company-client-docs-tools">
@@ -839,7 +864,10 @@ function ClientAreaBody({
 
           {editMode ? (
             <section className="company-client-side-card" aria-label="Staging link (admin)">
-              <h2 className="company-client-side-title">Staging card</h2>
+              <div className="company-client-side-head">
+                <h2 className="company-client-side-title">Staging card</h2>
+                <span className="ds-status ds-status-neutral">Optional</span>
+              </div>
               <p className="company-client-side-body">
                 Edit the label and URL viewers see in their right rail. Toggle per-user visibility in the Account manager assignments table below.
               </p>
@@ -906,10 +934,13 @@ function AccountManagerAssignmentsPanel({
   return (
     <section className="company-client-am-panel" aria-label="Account manager assignments">
       <header className="company-client-panel-header">
-        <h2>Account manager assignments</h2>
-        <span className="company-client-panel-hint">
-          {managers.length} account manager{managers.length === 1 ? '' : 's'} · {assignableUsers.length} assignable user{assignableUsers.length === 1 ? '' : 's'}
-        </span>
+        <div>
+          <h2>Account manager assignments</h2>
+          <span className="company-client-panel-hint">
+            {managers.length} account manager{managers.length === 1 ? '' : 's'} · {assignableUsers.length} assignable user{assignableUsers.length === 1 ? '' : 's'}
+          </span>
+        </div>
+        <span className="ds-status ds-status-info">Assignments</span>
       </header>
       {error && <p className="company-client-am-panel-error">⚠ {error}</p>}
       {managers.length === 0 ? (

@@ -78,6 +78,22 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 
 type Tab = 'users' | 'branding' | 'audit';
 
+const PRIMARY_SWATCHES = [
+  { label: 'Blue', value: '#2563eb' },
+  { label: 'Purple', value: '#7c3aed' },
+  { label: 'Indigo', value: '#4f46e5' },
+  { label: 'Green', value: '#16a34a' },
+  { label: 'Orange', value: '#ea580c' },
+  { label: 'Red', value: '#dc2626' },
+] as const;
+
+const SECONDARY_SWATCHES = [
+  { label: 'Neutral', value: '#737373' },
+  { label: 'Gray', value: '#6b7280' },
+  { label: 'Slate', value: '#475569' },
+  { label: 'Zinc', value: '#52525b' },
+] as const;
+
 export function CompanyAdmin() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
@@ -117,7 +133,7 @@ export function CompanyAdmin() {
       ['--brand-accent' as string]: company.branding?.accentColor || '#63cdff',
     }}>
       <header className="company-admin-header">
-        <div>
+        <div className="company-admin-header-copy">
           <div className="company-admin-kicker">Company admin</div>
           <h1>{company.name}</h1>
         </div>
@@ -396,9 +412,51 @@ function BrandingTab({ companyId, initial, onSaved }: { companyId: string; initi
       <p>Controls how your company landing page renders for clients at <code>/c/&lt;your-slug&gt;</code>.</p>
       <div className="company-admin-branding-grid">
         <div className="company-admin-form">
+          <div className="company-admin-palette-block">
+            <div className="company-admin-palette-head">
+              <strong>Primary Color</strong>
+              <span>Applied to active navigation, buttons, status emphasis, and highlights.</span>
+            </div>
+            <div className="company-admin-swatch-grid" role="list" aria-label="Primary color palette">
+              {PRIMARY_SWATCHES.map((swatch) => (
+                <button
+                  key={swatch.value}
+                  type="button"
+                  role="listitem"
+                  className={`company-admin-swatch${(draft.primaryColor ?? '#ff1b23').toLowerCase() === swatch.value ? ' is-active' : ''}`}
+                  onClick={() => setField('primaryColor', swatch.value)}
+                >
+                  <span className="company-admin-swatch-chip" style={{ background: swatch.value }} />
+                  <strong>{swatch.label}</strong>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="company-admin-palette-block">
+            <div className="company-admin-palette-head">
+              <strong>Secondary Color</strong>
+              <span>Used for neutral surfaces, outlines, badges, and softer accents.</span>
+            </div>
+            <div className="company-admin-swatch-grid" role="list" aria-label="Secondary color palette">
+              {SECONDARY_SWATCHES.map((swatch) => (
+                <button
+                  key={swatch.value}
+                  type="button"
+                  role="listitem"
+                  className={`company-admin-swatch${(draft.accentColor ?? '#63cdff').toLowerCase() === swatch.value ? ' is-active' : ''}`}
+                  onClick={() => setField('accentColor', swatch.value)}
+                >
+                  <span className="company-admin-swatch-chip" style={{ background: swatch.value }} />
+                  <strong>{swatch.label}</strong>
+                </button>
+              ))}
+            </div>
+          </div>
           <label><span>Logo URL</span><input value={draft.logoUrl ?? ''} onChange={(e) => setField('logoUrl', e.target.value)} placeholder="https://..." /></label>
-          <label><span>Primary color</span><input type="color" value={draft.primaryColor ?? '#ff1b23'} onChange={(e) => setField('primaryColor', e.target.value)} /></label>
-          <label><span>Accent color</span><input type="color" value={draft.accentColor ?? '#63cdff'} onChange={(e) => setField('accentColor', e.target.value)} /></label>
+          <div className="company-admin-color-row">
+            <label><span>Primary color</span><input type="color" value={draft.primaryColor ?? '#ff1b23'} onChange={(e) => setField('primaryColor', e.target.value)} /></label>
+            <label><span>Secondary color</span><input type="color" value={draft.accentColor ?? '#63cdff'} onChange={(e) => setField('accentColor', e.target.value)} /></label>
+          </div>
           <label><span>Hero title</span><input value={draft.heroTitle ?? ''} onChange={(e) => setField('heroTitle', e.target.value)} /></label>
           <label><span>Hero subtitle</span><textarea rows={2} value={draft.heroSubtitle ?? ''} onChange={(e) => setField('heroSubtitle', e.target.value)} /></label>
           <label><span>Description</span><textarea rows={3} value={draft.description ?? ''} onChange={(e) => setField('description', e.target.value)} /></label>

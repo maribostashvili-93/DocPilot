@@ -168,6 +168,7 @@ function CompanyCMSChrome({
           <div>
             <div className="company-cms-kicker">Documentation CMS</div>
             <div className="company-cms-company-name">{company.name}</div>
+            <div className="company-cms-company-meta">Brand portal · docs · publishing</div>
           </div>
         </div>
         <nav className="company-cms-topnav">

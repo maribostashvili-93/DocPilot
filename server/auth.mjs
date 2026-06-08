@@ -223,16 +223,20 @@ export function isSuperAdmin(roles) {
   return roles.includes('superadmin');
 }
 
-export function appendAudit({ companyId, userId, action, entityType, entityId, ip, userAgent, summary, metadata }) {
+export function appendAudit({ companyId, userId, action, entityType, entityId, productId, documentId, sectionId, releaseId, ip, userAgent, summary, metadata }) {
   db.prepare(`
-    INSERT INTO audit_events (company_id, user_id, action, entity_type, entity_id, ip, user_agent, summary, metadata_json, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO audit_events (company_id, user_id, action, entity_type, entity_id, product_id, document_id, section_id, release_id, ip, user_agent, summary, metadata_json, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     companyId ?? null,
     userId ?? null,
     action,
     entityType ?? null,
     entityId ?? null,
+    productId ?? null,
+    documentId ?? null,
+    sectionId ?? null,
+    releaseId ?? null,
     ip ?? null,
     userAgent ?? null,
     summary ?? null,

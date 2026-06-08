@@ -9,6 +9,13 @@ import {
   loadAuthFromRequest, hasAnyRole, isSuperAdmin, appendAudit,
 } from './auth.mjs';
 import { db, makeId, makeSlug, nowIso } from './db.mjs';
+import { can } from './authz.mjs';
+import { applyTransition, getTransitionHistory, checkBlockingRules } from './workflow.mjs';
+import * as productAdapter     from './adapter/products.mjs';
+import * as documentAdapter    from './adapter/documents.mjs';
+import * as sectionAdapter     from './adapter/sections.mjs';
+import * as translationAdapter from './adapter/translations.mjs';
+import * as releaseAdapter     from './adapter/releases.mjs';
 
 function send(res, status, body, extraHeaders = {}) {
   const headers = {
@@ -513,5 +520,656 @@ export async function handleApiV2(req, res, url) {
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/audit$/);
   if (m && req.method === 'GET') return routeAuditList(req, res, m[1]);
 
+  // ─── CONTENT ROUTES ───────────────────────────────────────────────────────
+
+  // Products
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/products$/);
+  if (m) {
+    if (req.method === 'GET')  return routeProductsList(req, res, m[1]);
+    if (req.method === 'POST') return routeProductCreate(req, res, m[1]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/products\/([A-Za-z0-9_-]+)$/);
+  if (m) {
+    if (req.method === 'GET')    return routeProductGet(req, res, m[1], m[2]);
+    if (req.method === 'PUT')    return routeProductUpdate(req, res, m[1], m[2]);
+    if (req.method === 'DELETE') return routeProductDelete(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/products\/([A-Za-z0-9_-]+)\/status$/);
+  if (m && req.method === 'PUT') return routeProductTransition(req, res, m[1], m[2]);
+
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/products\/([A-Za-z0-9_-]+)\/members$/);
+  if (m) {
+    if (req.method === 'GET')  return routeProductMembersList(req, res, m[1], m[2]);
+    if (req.method === 'POST') return routeProductMemberAdd(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/products\/([A-Za-z0-9_-]+)\/members\/([A-Za-z0-9_-]+)$/);
+  if (m && req.method === 'DELETE') return routeProductMemberRemove(req, res, m[1], m[2], m[3]);
+
+  // Documents
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/products\/([A-Za-z0-9_-]+)\/documents$/);
+  if (m) {
+    if (req.method === 'GET')  return routeDocumentsList(req, res, m[1], m[2]);
+    if (req.method === 'POST') return routeDocumentCreate(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/documents\/([A-Za-z0-9_-]+)$/);
+  if (m) {
+    if (req.method === 'GET')    return routeDocumentGet(req, res, m[1], m[2]);
+    if (req.method === 'PUT')    return routeDocumentUpdate(req, res, m[1], m[2]);
+    if (req.method === 'DELETE') return routeDocumentDelete(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/documents\/([A-Za-z0-9_-]+)\/transition$/);
+  if (m && req.method === 'POST') return routeDocumentTransition(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/documents\/([A-Za-z0-9_-]+)\/transitions$/);
+  if (m && req.method === 'GET')  return routeDocumentTransitionHistory(req, res, m[1], m[2]);
+
+  // Translation locales
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/documents\/([A-Za-z0-9_-]+)\/translation-locales$/);
+  if (m && req.method === 'GET') return routeTranslationLocalesList(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/documents\/([A-Za-z0-9_-]+)\/translation-locales\/([A-Za-z0-9_-]+)\/status$/);
+  if (m && req.method === 'PUT') return routeTranslationLocaleStatus(req, res, m[1], m[2], m[3]);
+
+  // Sections
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/documents\/([A-Za-z0-9_-]+)\/sections$/);
+  if (m) {
+    if (req.method === 'GET')  return routeSectionsList(req, res, m[1], m[2]);
+    if (req.method === 'POST') return routeSectionCreate(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/sections\/([A-Za-z0-9_-]+)$/);
+  if (m) {
+    if (req.method === 'GET')    return routeSectionGet(req, res, m[1], m[2]);
+    if (req.method === 'PUT')    return routeSectionUpdate(req, res, m[1], m[2]);
+    if (req.method === 'DELETE') return routeSectionDelete(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/sections\/([A-Za-z0-9_-]+)\/transition$/);
+  if (m && req.method === 'POST') return routeSectionTransition(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/sections\/([A-Za-z0-9_-]+)\/transitions$/);
+  if (m && req.method === 'GET')  return routeSectionTransitionHistory(req, res, m[1], m[2]);
+
+  // Section comments
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/sections\/([A-Za-z0-9_-]+)\/comments$/);
+  if (m) {
+    if (req.method === 'GET')  return routeCommentsList(req, res, m[1], m[2]);
+    if (req.method === 'POST') return routeCommentCreate(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/comments\/([A-Za-z0-9_-]+)\/resolve$/);
+  if (m && req.method === 'PUT') return routeCommentResolve(req, res, m[1], m[2]);
+
+  // Translation strings
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/sections\/([A-Za-z0-9_-]+)\/translation-strings$/);
+  if (m && req.method === 'GET') return routeTranslationStringsList(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/sections\/([A-Za-z0-9_-]+)\/translation-strings\/([A-Za-z0-9_-]+)$/);
+  if (m && req.method === 'PUT') return routeTranslationStringSave(req, res, m[1], m[2], m[3]);
+
+  // Releases
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/products\/([A-Za-z0-9_-]+)\/releases$/);
+  if (m) {
+    if (req.method === 'GET')  return routeReleasesList(req, res, m[1], m[2]);
+    if (req.method === 'POST') return routeReleaseCreate(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/releases\/([A-Za-z0-9_-]+)$/);
+  if (m) {
+    if (req.method === 'GET') return routeReleaseGet(req, res, m[1], m[2]);
+    if (req.method === 'PUT') return routeReleaseUpdate(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/releases\/([A-Za-z0-9_-]+)\/transition$/);
+  if (m && req.method === 'POST') return routeReleaseTransition(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/releases\/([A-Za-z0-9_-]+)\/rollback$/);
+  if (m && req.method === 'POST') return routeReleaseRollback(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/releases\/([A-Za-z0-9_-]+)\/readiness$/);
+  if (m && req.method === 'GET') return routeReleaseReadiness(req, res, m[1], m[2]);
+
   return null; // signal unhandled — fall through to legacy router
+}
+
+// ─── CONTENT ROUTE HANDLERS ───────────────────────────────────────────────────
+
+function requireTenantMatch(user, roles, cid) {
+  return isSuperAdmin(roles) || user.company_id === cid;
+}
+
+// ─── Products ────────────────────────────────────────────────────────────────
+
+function routeProductsList(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.view')) return send(res, 403, { error: 'Forbidden' });
+  const url2 = new URL(req.url, 'http://x');
+  const products = productAdapter.list(cid, { status: url2.searchParams.get('status') || undefined });
+  return send(res, 200, { products });
+}
+
+function routeProductGet(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.view')) return send(res, 403, { error: 'Forbidden' });
+  const product = productAdapter.get(pid);
+  if (!product || product.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  return send(res, 200, { product });
+}
+
+async function routeProductCreate(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.create')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.name?.trim()) return send(res, 400, { error: 'name is required' });
+  const product = productAdapter.save({
+    company_id: cid,
+    name: body.name.trim(),
+    studio: body.studio ?? null,
+    status: 'draft',
+    description: body.description ?? null,
+    version: body.version ?? null,
+    nav_order: body.nav_order ?? 1,
+  }, user.id);
+  return send(res, 201, { product });
+}
+
+async function routeProductUpdate(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.edit')) return send(res, 403, { error: 'Forbidden' });
+  const existing = productAdapter.get(pid);
+  if (!existing || existing.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  const body = await readBody(req);
+  const updated = productAdapter.save({ ...existing, ...body, id: pid, company_id: cid }, user.id);
+  return send(res, 200, { product: updated });
+}
+
+function routeProductDelete(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.archive')) return send(res, 403, { error: 'Forbidden' });
+  const ok = productAdapter.remove(pid, user.id);
+  if (!ok) return send(res, 404, { error: 'Not found' });
+  return send(res, 200, { ok: true });
+}
+
+async function routeProductTransition(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.status) return send(res, 400, { error: 'status is required' });
+  try {
+    const result = applyTransition('product', pid, body.status, user.id, body.note ?? null);
+    return send(res, 200, { transition: result });
+  } catch (err) {
+    return send(res, err.statusCode ?? 500, { error: err.message, issues: err.issues ?? [] });
+  }
+}
+
+// ─── Product members ──────────────────────────────────────────────────────────
+
+function routeProductMembersList(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.view')) return send(res, 403, { error: 'Forbidden' });
+  const members = db.prepare(`
+    SELECT pm.*, u.name, u.email, gb.name as granted_by_name
+    FROM product_members pm
+    JOIN users u ON u.id = pm.user_id
+    LEFT JOIN users gb ON gb.id = pm.granted_by
+    WHERE pm.product_id = ?
+    ORDER BY pm.granted_at ASC
+  `).all(pid);
+  return send(res, 200, { members });
+}
+
+async function routeProductMemberAdd(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.manage')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.userId || !body.role) return send(res, 400, { error: 'userId and role are required' });
+  db.prepare(`
+    INSERT INTO product_members(id, product_id, user_id, role, granted_by, granted_at)
+    VALUES(?, ?, ?, ?, ?, ?)
+    ON CONFLICT(product_id, user_id) DO UPDATE SET role = excluded.role, granted_by = excluded.granted_by, granted_at = excluded.granted_at
+  `).run(makeId('pm'), pid, body.userId, body.role, user.id, nowIso());
+  return send(res, 201, { ok: true });
+}
+
+function routeProductMemberRemove(req, res, cid, pid, uid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.manage')) return send(res, 403, { error: 'Forbidden' });
+  db.prepare('DELETE FROM product_members WHERE product_id = ? AND user_id = ?').run(pid, uid);
+  return send(res, 200, { ok: true });
+}
+
+// ─── Documents ────────────────────────────────────────────────────────────────
+
+function routeDocumentsList(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'document.view')) return send(res, 403, { error: 'Forbidden' });
+  const url2 = new URL(req.url, 'http://x');
+  const documents = documentAdapter.list(cid, {
+    productId: pid,
+    status: url2.searchParams.get('status') || undefined,
+  });
+  return send(res, 200, { documents });
+}
+
+function routeDocumentGet(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'document.view')) return send(res, 403, { error: 'Forbidden' });
+  const document = documentAdapter.get(did);
+  if (!document || document.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  return send(res, 200, { document });
+}
+
+async function routeDocumentCreate(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'document.create')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.title?.trim()) return send(res, 400, { error: 'title is required' });
+  const document = documentAdapter.save({
+    company_id: cid,
+    product_id: pid,
+    title: body.title.trim(),
+    type: body.type ?? null,
+    status: 'draft',
+    version: body.version ?? null,
+    description: body.description ?? null,
+    audience: body.audience ?? null,
+    taxonomy: body.taxonomy ?? null,
+    nav_order: body.nav_order ?? null,
+    owner: user.id,
+  }, user.id);
+  return send(res, 201, { document });
+}
+
+async function routeDocumentUpdate(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'document.edit')) return send(res, 403, { error: 'Forbidden' });
+  const existing = documentAdapter.get(did);
+  if (!existing || existing.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  const body = await readBody(req);
+  const updated = documentAdapter.save({ ...existing, ...body, id: did, company_id: cid }, user.id);
+  return send(res, 200, { document: updated });
+}
+
+function routeDocumentDelete(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'document.archive')) return send(res, 403, { error: 'Forbidden' });
+  const ok = documentAdapter.remove(did, user.id);
+  if (!ok) return send(res, 404, { error: 'Not found' });
+  return send(res, 200, { ok: true });
+}
+
+async function routeDocumentTransition(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.to) return send(res, 400, { error: 'to is required' });
+  const actionMap = { review: 'document.review', approved: 'document.approve', draft: 'document.edit', archived: 'document.archive' };
+  const required = actionMap[body.to] ?? 'document.edit';
+  if (!can(user, roles, required)) return send(res, 403, { error: 'Forbidden' });
+  try {
+    const result = applyTransition('document', did, body.to, user.id, body.note ?? null);
+    return send(res, 200, { transition: result });
+  } catch (err) {
+    return send(res, err.statusCode ?? 500, { error: err.message, issues: err.issues ?? [] });
+  }
+}
+
+function routeDocumentTransitionHistory(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'document.view')) return send(res, 403, { error: 'Forbidden' });
+  return send(res, 200, { transitions: getTransitionHistory('document', did) });
+}
+
+// ─── Translation locales ──────────────────────────────────────────────────────
+
+function routeTranslationLocalesList(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.view')) return send(res, 403, { error: 'Forbidden' });
+  return send(res, 200, { locales: translationAdapter.getLocales(did) });
+}
+
+async function routeTranslationLocaleStatus(req, res, cid, did, locale) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.edit')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  const updated = translationAdapter.saveLocale({
+    companyId: cid, documentId: did, locale,
+    status: body.status ?? 'in-progress',
+    completionPct: body.completionPct ?? 0,
+    reviewer: body.reviewer ?? null,
+  });
+  return send(res, 200, { locale: updated });
+}
+
+// ─── Sections ────────────────────────────────────────────────────────────────
+
+function routeSectionsList(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.view')) return send(res, 403, { error: 'Forbidden' });
+  return send(res, 200, { sections: sectionAdapter.listByDocument(did) });
+}
+
+function routeSectionGet(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.view')) return send(res, 403, { error: 'Forbidden' });
+  const section = sectionAdapter.get(sid);
+  if (!section || section.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  return send(res, 200, { section });
+}
+
+async function routeSectionCreate(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.create')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  const section = sectionAdapter.save({
+    company_id: cid,
+    document_id: did,
+    title: body.title ?? null,
+    summary: body.summary ?? null,
+    html: body.html ?? null,
+    number: body.number ?? null,
+    slug: body.slug ?? null,
+    status: 'draft',
+    owner: user.id,
+    position: body.position ?? 0,
+  }, user.id);
+  return send(res, 201, { section });
+}
+
+async function routeSectionUpdate(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.edit')) return send(res, 403, { error: 'Forbidden' });
+  const existing = sectionAdapter.get(sid);
+  if (!existing || existing.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  const body = await readBody(req);
+  const updated = sectionAdapter.save({ ...existing, ...body, id: sid, company_id: cid }, user.id);
+  return send(res, 200, { section: updated });
+}
+
+function routeSectionDelete(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.delete')) return send(res, 403, { error: 'Forbidden' });
+  const ok = sectionAdapter.remove(sid, user.id);
+  if (!ok) return send(res, 404, { error: 'Not found' });
+  return send(res, 200, { ok: true });
+}
+
+async function routeSectionTransition(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.to) return send(res, 400, { error: 'to is required' });
+  const actionMap = { review: 'section.review', approved: 'section.approve', draft: 'section.edit' };
+  const required = actionMap[body.to] ?? 'section.edit';
+  if (!can(user, roles, required)) return send(res, 403, { error: 'Forbidden' });
+  try {
+    const result = applyTransition('section', sid, body.to, user.id, body.note ?? null);
+    return send(res, 200, { transition: result });
+  } catch (err) {
+    return send(res, err.statusCode ?? 500, { error: err.message, issues: err.issues ?? [] });
+  }
+}
+
+function routeSectionTransitionHistory(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.view')) return send(res, 403, { error: 'Forbidden' });
+  return send(res, 200, { transitions: getTransitionHistory('section', sid) });
+}
+
+// ─── Section comments ─────────────────────────────────────────────────────────
+
+function routeCommentsList(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.view')) return send(res, 403, { error: 'Forbidden' });
+  const comments = db.prepare(`
+    SELECT c.*, u.name as author_name, u.email as author_email,
+           rb.name as resolved_by_name
+    FROM comments c
+    LEFT JOIN users u ON u.id = c.author_id
+    LEFT JOIN users rb ON rb.id = c.resolved_by
+    WHERE c.section_id = ?
+    ORDER BY c.created_at ASC
+  `).all(sid);
+  return send(res, 200, { comments });
+}
+
+async function routeCommentCreate(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.comment')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.body?.trim()) return send(res, 400, { error: 'body is required' });
+  const now = nowIso();
+  const comment = {
+    id: makeId('cmt'),
+    company_id: cid,
+    section_id: sid,
+    author_id: user.id,
+    body: body.body.trim(),
+    is_blocking: body.isBlocking ? 1 : 0,
+    resolved: 0,
+    resolved_by: null,
+    resolved_at: null,
+    parent_id: body.parentId ?? null,
+    created_at: now,
+    updated_at: now,
+  };
+  db.prepare(`
+    INSERT INTO comments(id, company_id, section_id, author_id, body, is_blocking, resolved, resolved_by, resolved_at, parent_id, created_at, updated_at)
+    VALUES(@id, @company_id, @section_id, @author_id, @body, @is_blocking, @resolved, @resolved_by, @resolved_at, @parent_id, @created_at, @updated_at)
+  `).run(comment);
+  return send(res, 201, { comment });
+}
+
+async function routeCommentResolve(req, res, cid, coid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.comment')) return send(res, 403, { error: 'Forbidden' });
+  const now = nowIso();
+  const result = db.prepare(
+    'UPDATE comments SET resolved = 1, resolved_by = ?, resolved_at = ?, updated_at = ? WHERE id = ? AND company_id = ?'
+  ).run(user.id, now, now, coid, cid);
+  if (!result.changes) return send(res, 404, { error: 'Comment not found' });
+  return send(res, 200, { ok: true });
+}
+
+// ─── Translation strings ──────────────────────────────────────────────────────
+
+function routeTranslationStringsList(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.view')) return send(res, 403, { error: 'Forbidden' });
+  const url2 = new URL(req.url, 'http://x');
+  const locale = url2.searchParams.get('locale') || null;
+  return send(res, 200, { strings: translationAdapter.getStrings(sid, locale) });
+}
+
+async function routeTranslationStringSave(req, res, cid, sid, locale) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.edit')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  const string = translationAdapter.saveString({
+    companyId: cid, sectionId: sid, locale,
+    body: body.body ?? null,
+    state: body.state ?? 'dirty',
+    translatedBy: user.id,
+    reviewedBy: null,
+  });
+  return send(res, 200, { string });
+}
+
+// ─── Releases ────────────────────────────────────────────────────────────────
+
+function routeReleasesList(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'release.view')) return send(res, 403, { error: 'Forbidden' });
+  const url2 = new URL(req.url, 'http://x');
+  const releases = releaseAdapter.list(cid, {
+    productId: pid,
+    status: url2.searchParams.get('status') || undefined,
+  });
+  return send(res, 200, { releases });
+}
+
+function routeReleaseGet(req, res, cid, rid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'release.view')) return send(res, 403, { error: 'Forbidden' });
+  const release = releaseAdapter.get(rid);
+  if (!release || release.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  return send(res, 200, { release });
+}
+
+async function routeReleaseCreate(req, res, cid, pid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'release.create')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.version?.trim()) return send(res, 400, { error: 'version is required' });
+  if (!body.documentId) return send(res, 400, { error: 'documentId is required' });
+  const release = releaseAdapter.save({
+    company_id: cid,
+    product_id: pid,
+    document_id: body.documentId,
+    version: body.version.trim(),
+    label: body.label ?? null,
+    status: 'draft',
+    notes: body.notes ?? null,
+    environment: body.environment ?? null,
+    reviewer: body.reviewer ?? null,
+  }, user.id);
+  return send(res, 201, { release });
+}
+
+async function routeReleaseUpdate(req, res, cid, rid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const existing = releaseAdapter.get(rid);
+  if (!existing || existing.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  const body = await readBody(req);
+  const updated = releaseAdapter.save({ ...existing, ...body, id: rid, company_id: cid }, user.id);
+  return send(res, 200, { release: updated });
+}
+
+async function routeReleaseTransition(req, res, cid, rid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.to) return send(res, 400, { error: 'to is required' });
+  const actionMap = { review: 'release.review', approved: 'release.approve', staged: 'release.stage', published: 'release.publish' };
+  const required = actionMap[body.to] ?? 'release.review';
+  if (!can(user, roles, required)) return send(res, 403, { error: 'Forbidden' });
+  try {
+    const result = applyTransition('release', rid, body.to, user.id, body.note ?? null);
+    return send(res, 200, { transition: result });
+  } catch (err) {
+    return send(res, err.statusCode ?? 500, { error: err.message, issues: err.issues ?? [] });
+  }
+}
+
+async function routeReleaseRollback(req, res, cid, rid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'release.rollback')) return send(res, 403, { error: 'Forbidden' });
+  const release = releaseAdapter.get(rid);
+  if (!release || release.company_id !== cid) return send(res, 404, { error: 'Not found' });
+  try {
+    const result = applyTransition('release', rid, 'rolled-back', user.id, 'Manual rollback');
+    return send(res, 200, { transition: result });
+  } catch (err) {
+    return send(res, err.statusCode ?? 500, { error: err.message, issues: err.issues ?? [] });
+  }
+}
+
+function routeReleaseReadiness(req, res, cid, rid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'release.view')) return send(res, 403, { error: 'Forbidden' });
+
+  const release = releaseAdapter.get(rid);
+  if (!release || release.company_id !== cid) return send(res, 404, { error: 'Not found' });
+
+  const sections = db.prepare(
+    'SELECT * FROM sections WHERE document_id = ?'
+  ).all(release.document_id);
+  const totalSections    = sections.length;
+  const approvedSections = sections.filter(s => s.status === 'approved').length;
+  const hasUnsafeHtml    = sections.some(s => s.has_unsafe_html);
+  const hasNotes         = !!release.notes?.trim();
+  const hasSnapshot      = !!release.snapshot_id;
+  const hasReviewer      = !!release.reviewer;
+
+  const locales = db.prepare(
+    'SELECT * FROM translation_locales WHERE document_id = ?'
+  ).all(release.document_id);
+  const below = locales.filter(l => l.completion_pct < 90);
+  const translationOk = below.length === 0;
+
+  const issues = checkBlockingRules('release', rid);
+
+  return send(res, 200, {
+    readiness: {
+      sectionsApproved:     { total: totalSections, approved: approvedSections, ok: approvedSections === totalSections && totalSections > 0 },
+      translationThreshold: { ok: translationOk, locales: locales.map(l => ({ locale: l.locale, pct: l.completion_pct })) },
+      releaseNotes:         { ok: hasNotes },
+      snapshot:             { ok: hasSnapshot },
+      unsafeHtml:           { ok: !hasUnsafeHtml },
+      reviewer:             { ok: hasReviewer },
+      overallReady:         approvedSections === totalSections && totalSections > 0 && !hasUnsafeHtml && hasNotes && translationOk && hasReviewer,
+      blockingIssues:       issues,
+    },
+  });
 }

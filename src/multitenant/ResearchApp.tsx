@@ -233,8 +233,21 @@ function newId(): string {
    Shared UI atoms
 ═══════════════════════════════════════════════════════════════════ */
 
+const STATUS_BADGE_MOD: Record<string, string> = {
+  pending: 'ds-badge-warning',
+  analyzing: 'ds-badge-info',
+  ready: 'ds-badge-success',
+  failed: 'ds-badge-danger',
+  running: 'ds-badge-info',
+  completed: 'ds-badge-success',
+  'pending-review': 'ds-badge-warning',
+  'sent-to-cms': 'ds-badge-success',
+  discarded: 'ds-badge-neutral',
+};
+
 function StatusBadge({ status }: { status: string }) {
-  return <span className={`rc-badge rc-badge-${status}`}>{status.replace(/-/g, ' ')}</span>;
+  const mod = STATUS_BADGE_MOD[status] ?? 'ds-badge-neutral';
+  return <span className={`ds-badge ${mod}`}>{status.replace(/-/g, ' ')}</span>;
 }
 
 function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
@@ -242,7 +255,7 @@ function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
     const t = setTimeout(onDone, 3200);
     return () => clearTimeout(t);
   }, [onDone]);
-  return <div className="rc-toast">✓ {msg}</div>;
+  return <div className="ds-toast">✓ {msg}</div>;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -273,28 +286,28 @@ function Sidebar({ slug, isOpen, onClose }: { slug: string; isOpen: boolean; onC
           ← Back to CMS
         </a>
 
-        <p className="rc-nav-group">Intelligence</p>
+        <p className="ds-nav-group">Intelligence</p>
 
         <Link
           to={base}
-          className={`rc-nav-item${active(base, true) ? ' active' : ''}`}
+          className={`ds-nav-item${active(base, true) ? ' active' : ''}`}
           onClick={onClose}
         >
-          <span className="rc-nav-icon">▣</span>Overview
+          <span aria-hidden="true">▣</span>Overview
         </Link>
         <Link
           to={`${base}/sources`}
-          className={`rc-nav-item${active(`${base}/sources`) ? ' active' : ''}`}
+          className={`ds-nav-item${active(`${base}/sources`) ? ' active' : ''}`}
           onClick={onClose}
         >
-          <span className="rc-nav-icon">◈</span>Sources
+          <span aria-hidden="true">◈</span>Sources
         </Link>
         <Link
           to={`${base}/generate`}
-          className={`rc-nav-item${active(`${base}/generate`) ? ' active' : ''}`}
+          className={`ds-nav-item${active(`${base}/generate`) ? ' active' : ''}`}
           onClick={onClose}
         >
-          <span className="rc-nav-icon">✦</span>Generate Draft
+          <span aria-hidden="true">✦</span>Generate Draft
         </Link>
       </aside>
     </>
@@ -355,17 +368,17 @@ function Dashboard({ slug }: { slug: string }) {
       <div className="rc-page-header">
         <div className="rc-page-kicker">Intelligence</div>
         <div className="rc-page-header-row">
-          <h1 className="rc-page-title">AI Research Center</h1>
-          <div className="rc-header-actions">
-            <Link to={`${base}/sources`} className="rc-btn rc-btn-secondary rc-btn-sm">
+          <h1 className="ds-page-header-title">AI Research Center</h1>
+          <div className="ds-page-header-actions">
+            <Link to={`${base}/sources`} className="ds-btn ds-btn-secondary ds-btn-sm">
               Add Source
             </Link>
-            <Link to={`${base}/generate`} className="rc-btn rc-btn-primary rc-btn-sm">
+            <Link to={`${base}/generate`} className="ds-btn ds-btn-primary ds-btn-sm">
               Generate Draft
             </Link>
           </div>
         </div>
-        <p className="rc-page-subtitle">Analyze sources, generate documentation, review and send to CMS.</p>
+        <p className="ds-page-header-sub">Analyze sources, generate documentation, review and send to CMS.</p>
         <div className="rc-page-meta">
           <span>{readySources.length} ready for generation</span>
           <span>{pendingDrafts.length} pending review</span>
@@ -374,25 +387,25 @@ function Dashboard({ slug }: { slug: string }) {
       </div>
 
       <div className="rc-stats-grid">
-        <div className="rc-stat-card">
-          <span className="rc-stat-label">Sources</span>
-          <span className="rc-stat-value">{sources.length}</span>
-          <span className="rc-stat-sub">{readySources.length} analyzed</span>
+        <div className="ds-stat">
+          <span className="ds-stat-label">Sources</span>
+          <span className="ds-stat-value">{sources.length}</span>
+          <span className="ds-stat-delta">{readySources.length} analyzed</span>
         </div>
-        <div className="rc-stat-card rc-stat-blue">
-          <span className="rc-stat-label">Jobs</span>
-          <span className="rc-stat-value">{jobs.length}</span>
-          <span className="rc-stat-sub">{jobs.filter((j) => j.status === 'completed').length} completed</span>
+        <div className="ds-stat rc-stat-blue">
+          <span className="ds-stat-label">Jobs</span>
+          <span className="ds-stat-value">{jobs.length}</span>
+          <span className="ds-stat-delta">{jobs.filter((j) => j.status === 'completed').length} completed</span>
         </div>
-        <div className="rc-stat-card rc-stat-amber">
-          <span className="rc-stat-label">Drafts</span>
-          <span className="rc-stat-value">{drafts.length}</span>
-          <span className="rc-stat-sub">{pendingDrafts.length} pending review</span>
+        <div className="ds-stat rc-stat-amber">
+          <span className="ds-stat-label">Drafts</span>
+          <span className="ds-stat-value">{drafts.length}</span>
+          <span className="ds-stat-delta">{pendingDrafts.length} pending review</span>
         </div>
-        <div className="rc-stat-card rc-stat-green">
-          <span className="rc-stat-label">In CMS</span>
-          <span className="rc-stat-value">{drafts.filter((d) => d.status === 'sent-to-cms').length}</span>
-          <span className="rc-stat-sub">sent to CMS</span>
+        <div className="ds-stat rc-stat-green">
+          <span className="ds-stat-label">In CMS</span>
+          <span className="ds-stat-value">{drafts.filter((d) => d.status === 'sent-to-cms').length}</span>
+          <span className="ds-stat-delta">sent to CMS</span>
         </div>
       </div>
 
@@ -405,7 +418,7 @@ function Dashboard({ slug }: { slug: string }) {
             {jobs.length === 0 ? (
               <p className="rc-panel-empty">No analysis jobs yet.</p>
             ) : (
-              <table className="rc-table">
+              <table className="ds-table">
                 <thead>
                   <tr>
                     <th>Source</th>
@@ -433,14 +446,14 @@ function Dashboard({ slug }: { slug: string }) {
           <div className="rc-panel-header">
             <span className="rc-panel-title">Pending Review</span>
             {pendingDrafts.length > 0 && (
-              <span className="rc-badge rc-badge-pending-review">{pendingDrafts.length}</span>
+              <span className="ds-badge ds-badge-warning">{pendingDrafts.length}</span>
             )}
           </div>
           <div className="rc-panel-body">
             {pendingDrafts.length === 0 ? (
               <p className="rc-panel-empty">No drafts awaiting review.</p>
             ) : (
-              <table className="rc-table">
+              <table className="ds-table">
                 <thead>
                   <tr>
                     <th>Title</th>
@@ -454,7 +467,7 @@ function Dashboard({ slug }: { slug: string }) {
                       <td style={{ fontWeight: 600 }}>{d.title}</td>
                       <td style={{ color: '#9aaabb', fontSize: 12 }}>{d.sourceName}</td>
                       <td>
-                        <Link to={`${base}/drafts/${d.id}`} className="rc-btn rc-btn-secondary rc-btn-sm">
+                        <Link to={`${base}/drafts/${d.id}`} className="ds-btn ds-btn-secondary ds-btn-sm">
                           Review
                         </Link>
                       </td>
@@ -484,12 +497,12 @@ function Sources({ slug }: { slug: string }) {
       <div className="rc-page-header">
         <div className="rc-page-kicker">Intelligence · Sources</div>
         <div className="rc-page-header-row">
-          <h1 className="rc-page-title">Sources Library</h1>
-          <button type="button" className="rc-btn rc-btn-primary" onClick={() => setShowModal(true)}>
+          <h1 className="ds-page-header-title">Sources Library</h1>
+          <button type="button" className="ds-btn ds-btn-primary" onClick={() => setShowModal(true)}>
             + Add Source
           </button>
         </div>
-        <p className="rc-page-subtitle">Add website or documentation URLs to analyze and extract knowledge.</p>
+        <p className="ds-page-header-sub">Add website or documentation URLs to analyze and extract knowledge.</p>
         <div className="rc-page-meta">
           <span>{sources.length} total sources</span>
           <span>{sources.filter((src) => src.status === 'ready').length} analyzed</span>
@@ -498,11 +511,11 @@ function Sources({ slug }: { slug: string }) {
       </div>
 
       {sources.length === 0 ? (
-        <div className="rc-empty-state">
-          <div className="rc-empty-icon">◈</div>
-          <h3>No sources yet</h3>
-          <p>Add a URL to start analyzing documentation.</p>
-          <button type="button" className="rc-btn rc-btn-primary" onClick={() => setShowModal(true)}>
+        <div className="ds-empty-state">
+          <div className="ds-empty-state-icon">◈</div>
+          <h3 className="ds-empty-state-title">No sources yet</h3>
+          <p className="ds-empty-state-body">Add a URL to start analyzing documentation.</p>
+          <button type="button" className="ds-btn ds-btn-primary" onClick={() => setShowModal(true)}>
             + Add your first source
           </button>
         </div>
@@ -523,26 +536,26 @@ function Sources({ slug }: { slug: string }) {
                 {src.status === 'pending' && (
                   <button
                     type="button"
-                    className="rc-btn rc-btn-primary rc-btn-sm"
+                    className="ds-btn ds-btn-primary ds-btn-sm"
                     onClick={() => analyzeSource(src.id, src.name)}
                   >
                     Analyze
                   </button>
                 )}
                 {src.status === 'analyzing' && (
-                  <button type="button" className="rc-btn rc-btn-secondary rc-btn-sm" disabled>
+                  <button type="button" className="ds-btn ds-btn-secondary ds-btn-sm" disabled>
                     Analyzing…
                   </button>
                 )}
                 {src.status === 'ready' && (
-                  <Link to={`${base}/sources/${src.id}`} className="rc-btn rc-btn-secondary rc-btn-sm">
+                  <Link to={`${base}/sources/${src.id}`} className="ds-btn ds-btn-secondary ds-btn-sm">
                     View Analysis
                   </Link>
                 )}
                 {src.status === 'failed' && (
                   <button
                     type="button"
-                    className="rc-btn rc-btn-secondary rc-btn-sm"
+                    className="ds-btn ds-btn-secondary ds-btn-sm"
                     onClick={() => analyzeSource(src.id, src.name)}
                   >
                     Retry
@@ -596,52 +609,58 @@ function AddSourceModal({ onClose, onAdd }: { onClose: () => void; onAdd: (s: RS
   }
 
   return (
-    <div className="rc-modal-backdrop" onClick={onClose}>
-      <div className="rc-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="rc-modal-title">Add Source</h3>
-        <p className="rc-modal-subtitle">Add a documentation or website URL to extract reusable knowledge for draft generation.</p>
+    <div className="ds-dialog-backdrop" onClick={onClose}>
+      <div className="ds-dialog" onClick={(e) => e.stopPropagation()}>
+        <div className="ds-dialog-header">
+          <h3 className="ds-dialog-title">Add Source</h3>
+        </div>
         <form onSubmit={submit}>
-          <div className="rc-field">
-            <label className="rc-label" htmlFor="src-name">Source name</label>
-            <input
-              id="src-name"
-              className="rc-input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="DocPilot Documentation"
-              required
-              autoFocus
-            />
+          <div className="ds-dialog-body">
+            <p style={{ marginTop: 0, marginBottom: 'var(--ds-space-4)' }}>
+              Add a documentation or website URL to extract reusable knowledge for draft generation.
+            </p>
+            <div className="ds-field">
+              <label className="ds-label" htmlFor="src-name">Source name</label>
+              <input
+                id="src-name"
+                className="ds-input"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="DocPilot Documentation"
+                required
+                autoFocus
+              />
+            </div>
+            <div className="ds-field">
+              <label className="ds-label" htmlFor="src-url">URL</label>
+              <input
+                id="src-url"
+                className="ds-input"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://docs.example.com"
+                required
+              />
+            </div>
+            <div className="ds-field">
+              <label className="ds-label" htmlFor="src-type">Source type</label>
+              <select
+                id="src-type"
+                className="ds-select"
+                value={type}
+                onChange={(e) => setType(e.target.value as SourceType)}
+              >
+                <option value="website">Website URL</option>
+                <option value="docs">Documentation URL</option>
+              </select>
+            </div>
+            {err && <div className="ds-alert ds-alert-danger">{err}</div>}
           </div>
-          <div className="rc-field">
-            <label className="rc-label" htmlFor="src-url">URL</label>
-            <input
-              id="src-url"
-              className="rc-input"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://docs.example.com"
-              required
-            />
-          </div>
-          <div className="rc-field">
-            <label className="rc-label" htmlFor="src-type">Source type</label>
-            <select
-              id="src-type"
-              className="rc-input rc-select"
-              value={type}
-              onChange={(e) => setType(e.target.value as SourceType)}
-            >
-              <option value="website">Website URL</option>
-              <option value="docs">Documentation URL</option>
-            </select>
-          </div>
-          {err && <div className="rc-error-msg">{err}</div>}
-          <div className="rc-modal-actions">
-            <button type="button" className="rc-btn rc-btn-secondary" onClick={onClose}>
+          <div className="ds-dialog-footer">
+            <button type="button" className="ds-btn ds-btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="rc-btn rc-btn-primary">
+            <button type="submit" className="ds-btn ds-btn-primary">
               Add Source
             </button>
           </div>
@@ -666,7 +685,7 @@ function SourceDetail({ slug }: { slug: string }) {
     return (
       <div className="rc-page">
         <p style={{ color: '#9aaabb' }}>Source not found.</p>
-        <Link to={`${base}/sources`} className="rc-btn rc-btn-secondary" style={{ marginTop: 12, display: 'inline-flex' }}>
+        <Link to={`${base}/sources`} className="ds-btn ds-btn-secondary" style={{ marginTop: 12, display: 'inline-flex' }}>
           ← Back to Sources
         </Link>
       </div>
@@ -683,7 +702,7 @@ function SourceDetail({ slug }: { slug: string }) {
           {' · '}Analysis
         </div>
         <div className="rc-page-header-row">
-          <h1 className="rc-page-title">{src.name}</h1>
+          <h1 className="ds-page-header-title">{src.name}</h1>
           <StatusBadge status={src.status} />
         </div>
       </div>
@@ -695,7 +714,7 @@ function SourceDetail({ slug }: { slug: string }) {
               ? 'Analysis in progress… This may take a few moments.'
               : 'This source has not been analyzed yet. Go back to Sources Library and click Analyze.'}
           </p>
-          <Link to={`${base}/sources`} className="rc-btn rc-btn-secondary rc-btn-sm" style={{ display: 'inline-flex' }}>
+          <Link to={`${base}/sources`} className="ds-btn ds-btn-secondary ds-btn-sm" style={{ display: 'inline-flex' }}>
             ← Sources Library
           </Link>
         </div>
@@ -760,7 +779,7 @@ function SourceDetail({ slug }: { slug: string }) {
                 </div>
                 <button
                   type="button"
-                  className="rc-btn rc-btn-primary rc-btn-sm"
+                  className="ds-btn ds-btn-primary ds-btn-sm"
                   onClick={() => navigate(`${base}/generate?source=${src.id}`)}
                 >
                   Generate
@@ -814,8 +833,8 @@ function Generate({ slug }: { slug: string }) {
     <div className="rc-page">
       <div className="rc-page-header">
         <div className="rc-page-kicker">Intelligence · Generate</div>
-        <h1 className="rc-page-title">Generate Getting Started Guide</h1>
-        <p className="rc-page-subtitle">
+        <h1 className="ds-page-header-title">Generate Getting Started Guide</h1>
+        <p className="ds-page-header-sub">
           Choose an analyzed source to generate a structured Getting Started guide.
         </p>
         <div className="rc-page-meta">
@@ -833,7 +852,7 @@ function Generate({ slug }: { slug: string }) {
             </p>
             <Link
               to={`${base}/sources`}
-              className="rc-btn rc-btn-secondary rc-btn-sm"
+              className="ds-btn ds-btn-secondary ds-btn-sm"
               style={{ marginTop: 12, display: 'inline-flex' }}
             >
               Go to Sources
@@ -847,7 +866,7 @@ function Generate({ slug }: { slug: string }) {
               </label>
               <select
                 id="gen-source"
-                className="rc-input rc-select"
+                className="ds-select"
                 value={sourceId}
                 onChange={(e) => setSourceId(e.target.value)}
               >
@@ -878,7 +897,7 @@ function Generate({ slug }: { slug: string }) {
             <div className="rc-generate-section" style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <button
                 type="button"
-                className="rc-btn rc-btn-primary"
+                className="ds-btn ds-btn-primary"
                 onClick={generate}
                 disabled={busy || !sourceId}
               >
@@ -960,7 +979,7 @@ function DraftReview({ slug }: { slug: string }) {
     return (
       <div className="rc-page">
         <p style={{ color: '#9aaabb' }}>Draft not found.</p>
-        <Link to={base} className="rc-btn rc-btn-secondary" style={{ marginTop: 12, display: 'inline-flex' }}>
+        <Link to={base} className="ds-btn ds-btn-secondary" style={{ marginTop: 12, display: 'inline-flex' }}>
           ← Overview
         </Link>
       </div>
@@ -990,10 +1009,10 @@ function DraftReview({ slug }: { slug: string }) {
           {' · '}Draft Review
         </div>
         <div className="rc-page-header-row">
-          <h1 className="rc-page-title">{draft.title}</h1>
+          <h1 className="ds-page-header-title">{draft.title}</h1>
           <StatusBadge status={draft.status} />
         </div>
-        <p className="rc-page-subtitle">
+        <p className="ds-page-header-sub">
           Source: {draft.sourceName} · Created {fmtDate(draft.createdAt)}
         </p>
         <div className="rc-page-meta">
@@ -1030,7 +1049,7 @@ function DraftReview({ slug }: { slug: string }) {
             <>
               <button
                 type="button"
-                className="rc-btn rc-btn-primary"
+                className="ds-btn ds-btn-primary"
                 onClick={sendToCMS}
                 style={{ width: '100%', justifyContent: 'center' }}
               >
@@ -1038,7 +1057,7 @@ function DraftReview({ slug }: { slug: string }) {
               </button>
               <button
                 type="button"
-                className="rc-btn rc-btn-danger"
+                className="ds-btn ds-btn-danger"
                 onClick={discard}
                 style={{ width: '100%', justifyContent: 'center' }}
               >
@@ -1048,7 +1067,7 @@ function DraftReview({ slug }: { slug: string }) {
           )}
 
           {draft.status === 'sent-to-cms' && (
-            <div className="rc-success-msg">
+            <div className="ds-alert ds-alert-success">
               ✓ This draft has been sent to the CMS and is available as a new document draft.
             </div>
           )}
@@ -1059,7 +1078,7 @@ function DraftReview({ slug }: { slug: string }) {
 
           <Link
             to={base}
-            className="rc-btn rc-btn-secondary"
+            className="ds-btn ds-btn-secondary"
             style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}
           >
             ← Back to Overview

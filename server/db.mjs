@@ -27,6 +27,7 @@ function ensureColumn(table, column, ddl) {
   db.exec(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
 }
 
+// users
 ensureColumn('users', 'surname', 'surname TEXT');
 ensureColumn('users', 'phone', 'phone TEXT');
 ensureColumn('users', 'telegram', 'telegram TEXT');
@@ -34,6 +35,25 @@ ensureColumn('users', 'signal_username', 'signal_username TEXT');
 ensureColumn('users', 'account_manager_user_id', 'account_manager_user_id TEXT REFERENCES users(id) ON DELETE SET NULL');
 ensureColumn('users', 'staging_card_enabled', 'staging_card_enabled INTEGER NOT NULL DEFAULT 1');
 db.exec('CREATE INDEX IF NOT EXISTS idx_users_account_manager ON users(account_manager_user_id)');
+
+// sections — Phase 2A: reviewer + unsafe HTML flag
+ensureColumn('sections', 'reviewer', 'reviewer TEXT');
+ensureColumn('sections', 'has_unsafe_html', 'has_unsafe_html INTEGER NOT NULL DEFAULT 0');
+
+// documents — Phase 2A: unsafe HTML flag
+ensureColumn('documents', 'has_unsafe_html', 'has_unsafe_html INTEGER NOT NULL DEFAULT 0');
+
+// releases — Phase 2A: product_id (top-level grouping), structured snapshot ref, reviewer
+ensureColumn('releases', 'product_id', 'product_id TEXT REFERENCES products(id)');
+ensureColumn('releases', 'snapshot_id', 'snapshot_id TEXT');
+ensureColumn('releases', 'reviewer', 'reviewer TEXT');
+
+// audit_events — Phase 2A: entity FK context columns for efficient filtering
+ensureColumn('audit_events', 'product_id', 'product_id TEXT');
+ensureColumn('audit_events', 'document_id', 'document_id TEXT');
+ensureColumn('audit_events', 'section_id', 'section_id TEXT');
+ensureColumn('audit_events', 'release_id', 'release_id TEXT');
+db.exec('CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_events(entity_type, entity_id)');
 
 export function nowIso() {
   return new Date().toISOString();

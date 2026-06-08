@@ -220,3 +220,142 @@ CREATE TABLE IF NOT EXISTS kv_store (
   updated_at TEXT NOT NULL,
   PRIMARY KEY (company_scope, key)
 );
+
+-- ─── Phase 2A additions ────────────────────────────────────────────────────
+-- All tables below were absent from the original schema.
+-- They use CREATE TABLE IF NOT EXISTS so re-running this file on an existing
+-- database is safe — existing tables are untouched.
+
+-- Scoped permission grants: replaces the flat role→write-permission map.
+-- action is a dot-namespaced string, e.g. 'release.publish', 'document.approve'.
+-- scope / scope_id narrow the grant: NULL scope_id means "all in company".
+CREATE TABLE IF NOT EXISTS permission_grants (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT,
+  action TEXT NOT NULL,
+  scope TEXT NOT NULL DEFAULT 'tenant',
+  scope_id TEXT,
+  granted_by TEXT REFERENCES users(id),
+  granted_at TEXT NOT NULL,
+  expires_at TEXT,
+  CHECK (user_id IS NOT NULL OR role IS NOT NULL)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pgrants_company ON permission_grants(company_id);
+CREATE INDEX IF NOT EXISTS idx_pgrants_user ON permission_grants(user_id, action, scope, scope_id);
+
+-- Per document × locale translation status.
+-- Tracks completion and review state at the locale level.
+CREATE TABLE IF NOT EXISTS translation_locales (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  locale TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'not-started',
+  completion_pct INTEGER NOT NULL DEFAULT 0,
+  reviewer TEXT REFERENCES users(id),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(document_id, locale)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tlocales_document ON translation_locales(document_id);
+CREATE INDEX IF NOT EXISTS idx_tlocales_company ON translation_locales(company_id);
+
+-- Per section × locale translated body with row-level state.
+-- 'dirty' = changed but unsaved, 'saved' = confirmed, 'review' = flagged.
+CREATE TABLE IF NOT EXISTS translation_strings (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  section_id TEXT NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
+  locale TEXT NOT NULL,
+  body TEXT,
+  state TEXT NOT NULL DEFAULT 'dirty',
+  translated_by TEXT REFERENCES users(id),
+  reviewed_by TEXT REFERENCES users(id),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(section_id, locale)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tstrings_section ON translation_strings(section_id);
+CREATE INDEX IF NOT EXISTS idx_tstrings_company ON translation_strings(company_id);
+
+-- Immutable content snapshot written at release publish time.
+-- Kept separate from the releases row so it can be large and queried independently.
+CREATE TABLE IF NOT EXISTS release_snapshots (
+  id TEXT PRIMARY KEY,
+  release_id TEXT NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
+  payload TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_rsnapshots_release ON release_snapshots(release_id);
+
+-- Content items bundled inside a release.
+-- readiness_score is captured at bundle time (0-100).
+CREATE TABLE IF NOT EXISTS release_items (
+  id TEXT PRIMARY KEY,
+  release_id TEXT NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
+  document_id TEXT REFERENCES documents(id),
+  section_id TEXT REFERENCES sections(id),
+  locale TEXT,
+  readiness_score INTEGER,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ritems_release ON release_items(release_id);
+
+-- Per-product role delegation without granting tenant-wide power.
+CREATE TABLE IF NOT EXISTS product_members (
+  id TEXT PRIMARY KEY,
+  product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  granted_by TEXT REFERENCES users(id),
+  granted_at TEXT NOT NULL,
+  UNIQUE(product_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pmembers_product ON product_members(product_id);
+CREATE INDEX IF NOT EXISTS idx_pmembers_user ON product_members(user_id);
+
+-- Section-level threaded comments.
+-- is_blocking = 1 prevents section from advancing to 'approved'.
+CREATE TABLE IF NOT EXISTS comments (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  section_id TEXT NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
+  author_id TEXT REFERENCES users(id),
+  body TEXT NOT NULL,
+  is_blocking INTEGER NOT NULL DEFAULT 0,
+  resolved INTEGER NOT NULL DEFAULT 0,
+  resolved_by TEXT REFERENCES users(id),
+  resolved_at TEXT,
+  parent_id TEXT REFERENCES comments(id),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_comments_section ON comments(section_id);
+CREATE INDEX IF NOT EXISTS idx_comments_company ON comments(company_id);
+
+-- Auditable log of every workflow state transition.
+-- Separate from audit_events so the transition chain is queryable without noise.
+-- entity_type: 'document' | 'section' | 'release' | 'product' | 'translation-locale'
+CREATE TABLE IF NOT EXISTS workflow_transitions (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  from_status TEXT NOT NULL,
+  to_status TEXT NOT NULL,
+  actor_id TEXT REFERENCES users(id),
+  note TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_wtrans_entity ON workflow_transitions(entity_type, entity_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_wtrans_company ON workflow_transitions(company_id, created_at DESC);

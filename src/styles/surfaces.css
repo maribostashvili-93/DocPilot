@@ -1,0 +1,117 @@
+.ds-surface-canvas {
+  background: var(--ds-bg-canvas);
+  color: var(--ds-text-primary);
+}
+
+.ds-surface-page {
+  background: var(--ds-bg-canvas-alt);
+  color: var(--ds-text-primary);
+}
+
+.ds-surface-panel {
+  border: var(--ds-border-width-thin) solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-bg-surface);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-surface-panel-soft {
+  border: var(--ds-border-width-thin) solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-bg-surface-soft);
+}
+
+.ds-surface-panel-tint {
+  border: var(--ds-border-width-thin) solid rgba(29, 163, 224, 0.14);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-bg-surface-tint);
+}
+
+.ds-surface-inverse {
+  background: var(--ds-bg-inverse);
+  color: var(--ds-text-inverse);
+}
+
+.ds-divider {
+  border-top: var(--ds-border-width-thin) solid var(--ds-border-subtle);
+}
+
+.ds-scroll-shell {
+  scrollbar-color: var(--ds-slate-300) transparent;
+  scrollbar-width: thin;
+}
+
+.ds-scroll-shell::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.ds-scroll-shell::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-slate-300);
+  background-clip: padding-box;
+}
+
+.ds-scroll-shell::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Glass Surface ────────────────────────────────────────────────── */
+
+.ds-surface-glass {
+  background: rgba(255, 255, 255, 0.72);
+  border: var(--ds-border-width-thin) solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--ds-radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Dark Surface ─────────────────────────────────────────────────── */
+
+.ds-surface-dark {
+  background: #0f1115;
+  color: #e8edf2;
+  border: var(--ds-border-width-thin) solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Dark Glass Surface ────────────────────────────────────────────── */
+
+.ds-surface-dark-glass {
+  background: rgba(14, 19, 26, 0.94);
+  border: var(--ds-border-width-thin) solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #f4f8fb;
+}
+
+/* ── Canvas Gradient ──────────────────────────────────────────────── */
+
+.ds-surface-canvas-gradient {
+  background:
+    radial-gradient(ellipse at top right, color-mix(in srgb, var(--ds-accent-secondary) 8%, transparent), transparent 40%),
+    linear-gradient(180deg, var(--ds-bg-canvas) 0%, var(--ds-bg-canvas-alt) 100%);
+  color: var(--ds-text-primary);
+}
+
+/* ── Admin Shell Layout ────────────────────────────────────────────── */
+
+.ds-admin-shell {
+  display: grid;
+  grid-template-rows: var(--ds-topbar-height) 1fr;
+  min-height: 100vh;
+}
+
+/* ── Topbar Surface ────────────────────────────────────────────────── */
+
+.ds-topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--ds-z-topbar);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+  min-height: var(--ds-topbar-height);
+  padding-inline: clamp(16px, 4vw, 48px);
+}

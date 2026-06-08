@@ -8,8 +8,8 @@
 .company-client-shell {
   --brand-primary: #ff1b23;
   --brand-accent: #63cdff;
-  font-family: 'Roboto', system-ui, -apple-system, Segoe UI, sans-serif;
-  color: #0f172a;
+  font-family: var(--ds-font-body);
+  color: var(--ds-text-primary);
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -116,12 +116,14 @@
 .company-landing-card {
   width: 100%;
   max-width: 440px;
-  background: #ffffff;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 18px;
   padding: 36px 32px 28px;
   box-shadow:
     0 30px 60px -20px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
 }
 
 .company-landing-card--missing {
@@ -155,10 +157,10 @@
 .company-landing-title {
   margin: 0 0 8px;
   font-size: 24px;
-  font-weight: 700;
-  font-family: 'Sansation', 'Roboto', sans-serif;
-  color: #0f172a;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-family: var(--ds-font-display);
+  color: var(--ds-text-primary);
+  letter-spacing: -0.02em;
 }
 
 .company-landing-subtitle {
@@ -188,30 +190,32 @@
 }
 
 .company-landing-label {
-  font-size: 12px;
-  font-weight: 600;
+  font-family: var(--ds-font-display);
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #475569;
+  letter-spacing: 0.12em;
+  color: var(--ds-text-secondary);
 }
 
 .company-landing-input {
   width: 100%;
   font: inherit;
-  font-size: 15px;
-  padding: 11px 14px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #0f172a;
+  min-height: 40px;
+  font-size: var(--ds-text-md);
+  padding: 8px 12px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-bg-surface);
+  color: var(--ds-text-primary);
   transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
 .company-landing-input:focus {
   outline: none;
-  background: #ffffff;
+  background: var(--ds-bg-surface);
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 22%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 18%, transparent);
 }
 
 .company-landing-input:disabled {
@@ -231,16 +235,21 @@
 
 .company-landing-submit {
   margin-top: 6px;
-  padding: 12px 16px;
-  font: inherit;
-  font-weight: 600;
-  font-size: 15px;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  font-family: var(--ds-font-display);
+  font-weight: var(--ds-font-weight-heavy);
+  font-size: var(--ds-text-md);
+  color: var(--ds-text-inverse);
   background: var(--brand-primary);
-  border: none;
-  border-radius: 10px;
+  border: 1px solid var(--brand-primary);
+  border-radius: var(--ds-radius-md);
   cursor: pointer;
-  transition: filter 120ms ease, transform 80ms ease;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--brand-primary) 18%, transparent);
+  transition: filter 120ms ease, transform 80ms ease, box-shadow 120ms ease;
 }
 
 .company-landing-submit:hover:not(:disabled) {
@@ -295,8 +304,10 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f8fafc;
-  color: #0f172a;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-accent) 8%, transparent), transparent 30%),
+    linear-gradient(180deg, var(--ds-bg-canvas) 0%, #eef2f6 100%);
+  color: var(--ds-text-primary);
 }
 
 .company-client-loading {
@@ -310,11 +321,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 24px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.86);
+  border-bottom: 1px solid var(--ds-border-subtle);
   position: sticky;
   top: 0;
   z-index: 10;
+  backdrop-filter: blur(14px);
 }
 
 .company-client-brand {
@@ -335,18 +347,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--brand-primary);
   color: #fff;
-  font-weight: 700;
+  font-family: var(--ds-font-display);
+  font-weight: 800;
   font-size: 15px;
 }
 
 .company-client-name {
-  font-weight: 700;
-  font-family: 'Sansation', 'Roboto', sans-serif;
+  font-weight: 800;
+  font-family: var(--ds-font-display);
   font-size: 16px;
-  color: #0f172a;
+  color: var(--ds-text-primary);
 }
 
 .company-client-user-menu {
@@ -356,21 +369,24 @@
 .company-client-user-trigger {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  font: inherit;
-  font-size: 14px;
-  color: #0f172a;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  padding: 7px 12px;
-  border-radius: 8px;
+  min-height: 40px;
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-font-weight-heavy);
+  color: var(--ds-text-primary);
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid var(--ds-border-default);
+  padding: 8px 14px;
+  border-radius: var(--ds-radius-pill);
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease;
 }
 
 .company-client-user-trigger:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: #fff;
+  border-color: var(--ds-border-strong);
 }
 
 .company-client-user-email {
@@ -390,12 +406,13 @@
   right: 0;
   top: calc(100% + 6px);
   min-width: 160px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 14px;
   box-shadow: 0 16px 32px -16px rgba(15, 23, 42, 0.3);
   padding: 6px;
   z-index: 20;
+  backdrop-filter: blur(12px);
 }
 
 .company-client-user-action {
@@ -621,9 +638,10 @@
 }
 .company-client-stat {
   padding: 18px 20px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 16px;
+  box-shadow: var(--ds-shadow-sm);
   display: grid;
   gap: 4px;
   align-content: start;
@@ -668,13 +686,15 @@
 }
 
 .company-client-docs-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 18px;
+  box-shadow: var(--ds-shadow-sm);
   padding: 22px 22px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  backdrop-filter: blur(10px);
 }
 .company-client-panel-header {
   display: flex;
@@ -708,15 +728,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  min-height: 40px;
+  padding: 0 12px;
+  background: var(--ds-bg-surface-soft);
+  border: 1px solid var(--ds-border-default);
   border-radius: 999px;
   transition: border-color .12s ease, background .12s ease;
 }
 .company-client-search:focus-within {
   border-color: var(--brand-primary);
-  background: #ffffff;
+  background: var(--ds-bg-surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 12%, transparent);
 }
 .company-client-search-icon {
   color: #94a3b8;
@@ -745,17 +767,19 @@
   letter-spacing: .08em;
   text-transform: uppercase;
   font-weight: 800;
-  padding: 7px 12px;
-  background: #f1f5f9;
-  border: 1px solid transparent;
+  min-height: 32px;
+  padding: 6px 12px;
+  background: var(--ds-bg-surface-soft);
+  border: 1px solid var(--ds-border-subtle);
   border-radius: 999px;
-  color: #475569;
+  color: var(--ds-text-secondary);
   cursor: pointer;
   transition: background .12s ease, color .12s ease, border-color .12s ease;
 }
 .company-client-chip:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--ds-bg-surface);
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-default);
 }
 .company-client-chip.active {
   background: var(--brand-primary);
@@ -770,8 +794,10 @@
   align-content: start;
 }
 .company-client-side-card {
-  background: #ffffff;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 18px;
+  box-shadow: var(--ds-shadow-sm);
   padding: 18px 18px 16px;
 }
 .company-client-side-title {
@@ -989,12 +1015,13 @@
 .company-client-edit-field textarea,
 .company-client-edit-field select {
   width: 100%;
-  padding: 9px 11px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #0f172a;
-  background: #fff;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-md);
+  color: var(--ds-text-primary);
+  background: var(--ds-bg-surface);
   font-family: inherit;
   transition: border-color .15s, box-shadow .15s;
 }
@@ -1021,9 +1048,9 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 16px;
   padding: 14px;
   cursor: default;
 }
@@ -1038,12 +1065,13 @@
 .company-client-doc-audience-input,
 .company-client-doc-desc-input {
   width: 100%;
-  padding: 7px 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
   font-size: 13px;
-  color: #0f172a;
-  background: #fff;
+  color: var(--ds-text-primary);
+  background: var(--ds-bg-surface);
   font-family: inherit;
 }
 .company-client-doc-title-input {
@@ -1062,9 +1090,10 @@
 .company-client-doc-card.is-edit .company-client-doc-status-input { width: 110px; flex-shrink: 0; }
 
 .company-client-footer-edit {
-  background: #fff;
-  border-top: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.82);
+  border-top: 1px solid var(--ds-border-subtle);
   padding: 14px 24px;
+  backdrop-filter: blur(10px);
 }
 .company-client-footer-edit .company-client-edit-field {
   max-width: 480px;
@@ -1081,9 +1110,10 @@
   align-items: center;
   gap: 16px;
   padding: 14px 24px;
-  background: #fff;
-  border-top: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid var(--ds-border-subtle);
   box-shadow: 0 -4px 16px rgba(15,23,42,.06);
+  backdrop-filter: blur(14px);
 }
 .company-client-edit-bar.is-dirty {
   background: linear-gradient(0deg, #fef3c7 0%, #fff 70%);
@@ -1101,20 +1131,21 @@
 }
 .company-client-edit-bar-discard,
 .company-client-edit-bar-save {
-  padding: 9px 18px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #0f172a;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 700;
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-bg-surface);
+  color: var(--ds-text-primary);
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-font-weight-heavy);
   letter-spacing: .03em;
   cursor: pointer;
   transition: background .15s, border-color .15s, opacity .15s;
 }
 .company-client-edit-bar-discard:hover:not(:disabled) {
-  background: #f8fafc;
+  background: var(--ds-bg-surface-soft);
 }
 .company-client-edit-bar-save {
   background: var(--brand-primary);
@@ -1947,3 +1978,1859 @@
   background: transparent; color: #475569; border: 1px solid #cbd5e1;
 }
 .app-view .landing-editor-footer .btn-outline:hover { border-color: #c81420; color: #c81420; }
+
+/* Tenant client-area editor redesign */
+.company-client-header {
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, .88);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .06);
+}
+
+.company-client-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.company-client-edit-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-family: var(--ds-font-display);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.company-client-edit-status.is-clean {
+  background: var(--ds-status-success-bg);
+  color: var(--ds-status-success-fg);
+}
+
+.company-client-edit-status.is-dirty {
+  background: var(--ds-status-warning-bg);
+  color: var(--ds-status-warning-fg);
+}
+
+.company-client-edit-toggle,
+.company-client-backoffice-link,
+.company-client-theme-toggle {
+  border-radius: 999px !important;
+}
+
+.company-client-main {
+  gap: 22px;
+  max-width: 1240px;
+}
+
+.company-client-shell.is-edit {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-accent) 10%, transparent), transparent 28%),
+    linear-gradient(180deg, #f7f9fc 0%, #edf3f8 100%);
+}
+
+.company-client-shell.is-edit .company-client-welcome,
+.company-client-shell.is-edit .company-client-docs-panel,
+.company-client-shell.is-edit .company-client-side-card,
+.company-client-shell.is-edit .company-client-branding-panel,
+.company-client-shell.is-edit .company-client-am-panel {
+  border-radius: 18px;
+  border-color: var(--ds-border-subtle);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, .06);
+}
+
+.company-client-panel-header > div {
+  display: grid;
+  gap: 4px;
+}
+
+.company-client-panel-header h2,
+.company-client-side-title,
+.company-client-welcome-title,
+.company-client-brand-preview strong {
+  font-family: var(--ds-font-display);
+}
+
+.company-client-panel-hint,
+.company-client-panel-count {
+  color: var(--ds-text-secondary);
+}
+
+.company-client-welcome {
+  border-top-width: 0;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-accent) 12%, transparent), transparent 30%),
+    linear-gradient(180deg, #fff, #fbfdff);
+}
+
+.company-client-edit-section-head {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.company-client-edit-section-kicker {
+  color: var(--ds-text-accent);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.company-client-edit-section-head strong {
+  font-family: var(--ds-font-display);
+  font-size: 20px;
+  color: var(--ds-text-primary);
+}
+
+.company-client-branding-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.company-client-brand-preview {
+  gap: 10px;
+  padding: 18px;
+}
+
+.company-client-brand-preview-kicker {
+  color: var(--ds-text-secondary);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.company-client-brand-preview-logo,
+.company-client-brand-preview-fallback {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+}
+
+.company-client-brand-preview-logo {
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--ds-border-subtle);
+  padding: 10px;
+}
+
+.company-client-brand-preview-fallback {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--ds-font-display);
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.company-client-brand-preview em {
+  color: var(--ds-text-secondary);
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.company-client-docs-panel .company-client-panel-header,
+.company-client-am-panel .company-client-panel-header,
+.company-client-branding-panel .company-client-panel-header {
+  align-items: start;
+}
+
+.company-client-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.company-client-am-panel {
+  padding: 20px 22px;
+}
+
+.company-client-am-table {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.company-client-edit-bar {
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--ds-border-subtle);
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, .12);
+  backdrop-filter: blur(14px);
+}
+
+.company-client-edit-bar.is-dirty {
+  border-color: color-mix(in srgb, var(--brand-primary) 24%, var(--ds-border-subtle));
+}
+
+.company-client-edit-bar-save {
+  background: var(--brand-primary);
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--brand-primary) 28%, transparent);
+}
+
+.company-client-edit-bar-discard,
+.company-client-edit-bar-save {
+  min-height: 42px;
+  border-radius: 12px;
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+}
+
+.company-client-edit-bar-clean {
+  color: var(--ds-status-success-fg);
+  font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .company-client-branding-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .company-client-header-actions {
+    justify-content: flex-end;
+  }
+
+  .company-client-edit-status {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .company-client-edit-bar {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+/* Company client-area polish: align with CMS shell and remove cramped mobile layouts */
+.company-client-shell.is-edit {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-accent) 12%, transparent), transparent 26%),
+    radial-gradient(circle at top left, rgba(255, 255, 255, .7), transparent 24%),
+    linear-gradient(180deg, #f7f4ee 0%, #edf2f7 100%);
+}
+
+.company-client-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  padding: 14px clamp(16px, 3vw, 28px);
+  border-bottom: 1px solid var(--ds-border-subtle);
+}
+
+.company-client-main {
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 24px 0 120px;
+  gap: 24px;
+}
+
+.company-client-shell.is-edit .company-client-welcome,
+.company-client-shell.is-edit .company-client-docs-panel,
+.company-client-shell.is-edit .company-client-side-card,
+.company-client-shell.is-edit .company-client-branding-panel,
+.company-client-shell.is-edit .company-client-am-panel {
+  border-radius: 22px;
+}
+
+.company-client-branding-panel,
+.company-client-docs-panel,
+.company-client-side-card,
+.company-client-am-panel {
+  overflow: hidden;
+}
+
+.company-client-branding-panel .company-client-panel-header,
+.company-client-docs-panel .company-client-panel-header,
+.company-client-am-panel .company-client-panel-header {
+  margin-bottom: 18px;
+}
+
+.company-client-edit-field input[type="text"],
+.company-client-edit-field input[type="url"],
+.company-client-edit-field input[type="email"],
+.company-client-edit-field input[type="search"],
+.company-client-edit-field textarea,
+.company-client-edit-field select,
+.company-client-doc-type-input,
+.company-client-doc-status-input,
+.company-client-doc-title-input,
+.company-client-doc-audience-input,
+.company-client-doc-desc-input {
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+.company-client-doc-desc-input,
+.company-client-edit-field textarea {
+  min-height: 88px;
+}
+
+.company-client-doc-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.company-client-doc-card,
+.company-client-doc-card.is-edit {
+  border-radius: 18px;
+}
+
+.company-client-doc-card.is-edit .company-client-doc-meta {
+  flex-wrap: wrap;
+}
+
+.company-client-side {
+  gap: 16px;
+}
+
+.company-client-staging-link,
+.company-client-backoffice-link,
+.company-client-edit-toggle,
+.company-client-theme-toggle {
+  min-height: 42px;
+}
+
+@media (max-width: 960px) {
+  .company-client-main {
+    width: min(100%, calc(100% - 24px));
+    padding-top: 18px;
+  }
+}
+
+@media (max-width: 720px) {
+  .company-client-main {
+    width: min(100%, calc(100% - 20px));
+    padding-bottom: 132px;
+  }
+
+  .company-client-header {
+    padding-inline: 12px;
+  }
+
+  .company-client-header-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .company-client-edit-toggle,
+  .company-client-backoffice-link,
+  .company-client-theme-toggle {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  .company-client-doc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Company editor sizing + typography refinement */
+.company-client-header {
+  min-height: 72px;
+  background: rgba(19, 24, 33, .96);
+  color: #f8fafc;
+  box-shadow: 0 16px 34px rgba(8, 15, 28, .22);
+}
+
+.company-client-brand {
+  gap: 14px;
+}
+
+.company-client-logo,
+.company-client-logo-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.company-client-name {
+  font-family: var(--ds-font-display);
+  font-size: 19px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.company-client-header-actions {
+  gap: 12px;
+}
+
+.company-client-edit-status,
+.company-client-theme-toggle,
+.company-client-edit-toggle,
+.company-client-backoffice-link,
+.company-client-user-trigger {
+  min-height: 40px;
+}
+
+.company-client-edit-toggle,
+.company-client-backoffice-link,
+.company-client-theme-toggle,
+.company-client-user-trigger {
+  border: 1px solid rgba(255, 255, 255, .08);
+  background: rgba(255, 255, 255, .04);
+  color: #f8fafc;
+}
+
+.company-client-backoffice-link:hover,
+.company-client-edit-toggle:hover,
+.company-client-theme-toggle:hover,
+.company-client-user-trigger:hover {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .16);
+}
+
+.company-client-main {
+  gap: 28px;
+}
+
+.company-client-welcome,
+.company-client-branding-panel,
+.company-client-docs-panel,
+.company-client-side-card,
+.company-client-am-panel {
+  box-shadow: 0 18px 40px rgba(15, 23, 42, .08);
+}
+
+.company-client-branding-panel,
+.company-client-docs-panel,
+.company-client-am-panel,
+.company-client-side-card {
+  padding: 18px 18px 20px;
+}
+
+.company-client-panel-header h2,
+.company-client-side-title {
+  font-size: 28px;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+}
+
+.company-client-panel-hint,
+.company-client-panel-count,
+.company-client-side-body {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.company-client-edit-field > span {
+  font-size: 10px;
+  letter-spacing: .14em;
+}
+
+.company-client-edit-section-head strong {
+  font-size: 28px;
+  letter-spacing: -.02em;
+}
+
+.company-client-edit-field input[type="text"],
+.company-client-edit-field input[type="url"],
+.company-client-edit-field input[type="email"],
+.company-client-edit-field input[type="search"],
+.company-client-edit-field textarea,
+.company-client-edit-field select,
+.company-client-doc-type-input,
+.company-client-doc-status-input,
+.company-client-doc-title-input,
+.company-client-doc-audience-input,
+.company-client-doc-desc-input {
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.company-client-doc-title-input {
+  font-family: var(--ds-font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.company-client-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.company-client-stat {
+  min-height: 122px;
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #151a23, #11161f);
+}
+
+.company-client-stat-label {
+  font-size: 10px;
+  letter-spacing: .16em;
+}
+
+.company-client-stat-value {
+  font-family: var(--ds-font-display);
+  font-size: clamp(28px, 2vw, 36px);
+  line-height: 1.05;
+}
+
+.company-client-stat-hint {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.company-client-doc-grid {
+  gap: 14px;
+}
+
+.company-client-doc-card.is-edit {
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, .06);
+  background: linear-gradient(180deg, #161b25, #131822);
+}
+
+.company-client-doc-card.is-edit .company-client-doc-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  gap: 10px;
+}
+
+.company-client-side-card .ds-status,
+.company-client-docs-panel .ds-status,
+.company-client-branding-panel .ds-status,
+.company-client-am-panel .ds-status {
+  flex-shrink: 0;
+}
+
+.company-client-side-title,
+.company-client-panel-header h2,
+.company-client-welcome-title,
+.company-client-doc-title {
+  color: #f8fafc;
+}
+
+.company-client-edit-bar {
+  min-height: 72px;
+  padding: 14px 18px;
+}
+
+.company-client-edit-bar-message {
+  font-size: 13px;
+}
+
+.company-client-edit-bar-discard,
+.company-client-edit-bar-save {
+  min-width: 124px;
+}
+
+.company-client-shell[data-theme="light"] .company-client-header {
+  background: rgba(19, 24, 33, .96);
+  color: #f8fafc;
+}
+
+.company-client-shell[data-theme="light"] .company-client-name,
+.company-client-shell[data-theme="light"] .company-client-user-email {
+  color: #f8fafc;
+}
+
+.company-client-shell[data-theme="light"] .company-client-branding-panel,
+.company-client-shell[data-theme="light"] .company-client-docs-panel,
+.company-client-shell[data-theme="light"] .company-client-side-card,
+.company-client-shell[data-theme="light"] .company-client-am-panel,
+.company-client-shell[data-theme="light"] .company-client-welcome,
+.company-client-shell[data-theme="light"] .company-client-stat {
+  background: linear-gradient(180deg, #151a23, #11161f);
+  border-color: rgba(15, 23, 42, .08);
+}
+
+.company-client-shell[data-theme="light"] .company-client-panel-hint,
+.company-client-shell[data-theme="light"] .company-client-panel-count,
+.company-client-shell[data-theme="light"] .company-client-side-body,
+.company-client-shell[data-theme="light"] .company-client-side-hint,
+.company-client-shell[data-theme="light"] .company-client-doc-desc,
+.company-client-shell[data-theme="light"] .company-client-doc-audience,
+.company-client-shell[data-theme="light"] .company-client-stat-hint {
+  color: #aab4c3;
+}
+
+.company-client-shell[data-theme="light"] .company-client-edit-field > span,
+.company-client-shell[data-theme="light"] .company-client-stat-label {
+  color: #90a0b7;
+}
+
+.company-client-shell[data-theme="light"] .company-client-brand-preview {
+  background: linear-gradient(180deg, #fcfdff, #f5f8fc);
+}
+
+@media (max-width: 1100px) {
+  .company-client-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .company-client-name {
+    font-size: 16px;
+  }
+
+  .company-client-panel-header h2,
+  .company-client-side-title,
+  .company-client-edit-section-head strong {
+    font-size: 22px;
+  }
+
+  .company-client-doc-card.is-edit .company-client-doc-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .company-client-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .company-client-edit-bar-actions {
+    width: 100%;
+  }
+
+  .company-client-edit-bar-discard,
+  .company-client-edit-bar-save {
+    flex: 1 1 0;
+  }
+}
+
+/* awesome-design-md refinement: Linear shell + Cursor warmth */
+.company-client-header {
+  min-height: 68px;
+  padding: 10px clamp(16px, 3vw, 28px);
+  background: rgba(14, 16, 20, .94);
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  box-shadow: 0 10px 24px rgba(7, 10, 15, .18);
+}
+
+.company-client-main {
+  gap: 24px;
+  padding-top: 20px;
+  padding-bottom: 156px;
+}
+
+.company-client-header-actions {
+  gap: 10px;
+}
+
+.company-client-edit-status,
+.company-client-theme-toggle,
+.company-client-edit-toggle,
+.company-client-backoffice-link,
+.company-client-user-trigger {
+  min-height: 36px;
+  font-size: 12px;
+}
+
+.company-client-theme-toggle,
+.company-client-edit-toggle,
+.company-client-backoffice-link,
+.company-client-user-trigger {
+  border-color: rgba(255, 255, 255, .07);
+  background: rgba(255, 255, 255, .035);
+}
+
+.company-client-name {
+  font-size: 18px;
+  letter-spacing: -.01em;
+}
+
+.company-client-welcome,
+.company-client-branding-panel,
+.company-client-docs-panel,
+.company-client-side-card,
+.company-client-am-panel,
+.company-client-stat {
+  border: 1px solid rgba(255, 255, 255, .06);
+  box-shadow: 0 12px 28px rgba(10, 14, 21, .12);
+}
+
+.company-client-shell[data-theme="light"] .company-client-branding-panel,
+.company-client-shell[data-theme="light"] .company-client-docs-panel,
+.company-client-shell[data-theme="light"] .company-client-side-card,
+.company-client-shell[data-theme="light"] .company-client-am-panel,
+.company-client-shell[data-theme="light"] .company-client-welcome,
+.company-client-shell[data-theme="light"] .company-client-stat {
+  background:
+    linear-gradient(180deg, rgba(23, 26, 33, .98), rgba(17, 20, 27, .98));
+  border-color: rgba(255, 255, 255, .06);
+}
+
+.company-client-branding-panel,
+.company-client-docs-panel,
+.company-client-side-card,
+.company-client-am-panel {
+  padding: 0 20px 20px;
+}
+
+.company-client-panel-header,
+.company-client-side-head {
+  margin: 0 -20px 18px;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, .05);
+  background: rgba(255, 255, 255, .015);
+}
+
+.company-client-side-card > .company-client-side-title {
+  margin: 0 0 10px;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+.company-client-panel-header h2,
+.company-client-side-title,
+.company-client-edit-section-head strong {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+.company-client-shell[data-theme="light"] .company-client-edit-section-head strong,
+.company-client-shell[data-theme="light"] .company-client-panel-header h2,
+.company-client-shell[data-theme="light"] .company-client-side-title,
+.company-client-shell[data-theme="light"] .company-client-welcome-title,
+.company-client-shell[data-theme="light"] .company-client-doc-title {
+  color: #f7f8f8;
+}
+
+.company-client-shell[data-theme="light"] .company-client-welcome-body,
+.company-client-shell[data-theme="light"] .company-client-side-body,
+.company-client-shell[data-theme="light"] .company-client-doc-desc,
+.company-client-shell[data-theme="light"] .company-client-doc-audience,
+.company-client-shell[data-theme="light"] .company-client-side-hint,
+.company-client-shell[data-theme="light"] .company-client-panel-count,
+.company-client-shell[data-theme="light"] .company-client-panel-hint,
+.company-client-shell[data-theme="light"] .company-client-stat-hint {
+  color: #b0b7c4;
+}
+
+.company-client-shell[data-theme="light"] .company-client-edit-field > span,
+.company-client-shell[data-theme="light"] .company-client-stat-label,
+.company-client-shell[data-theme="light"] .company-client-welcome-kicker {
+  color: #8f97a5;
+}
+
+.company-client-welcome {
+  padding: 24px 22px;
+  min-height: 260px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-accent) 10%, transparent), transparent 28%),
+    linear-gradient(180deg, rgba(22, 25, 32, .98), rgba(17, 20, 27, .98));
+}
+
+.company-client-welcome > div {
+  max-width: 760px;
+}
+
+.company-client-edit-section-head {
+  margin-bottom: 16px;
+}
+
+.company-client-edit-section-kicker {
+  color: color-mix(in srgb, var(--brand-primary) 68%, white);
+}
+
+.company-client-edit-field {
+  gap: 8px;
+}
+
+.company-client-edit-field input[type="text"],
+.company-client-edit-field input[type="url"],
+.company-client-edit-field input[type="email"],
+.company-client-edit-field input[type="search"],
+.company-client-edit-field textarea,
+.company-client-edit-field select,
+.company-client-doc-type-input,
+.company-client-doc-status-input,
+.company-client-doc-title-input,
+.company-client-doc-audience-input,
+.company-client-doc-desc-input {
+  border-color: rgba(255, 255, 255, .06);
+  background: rgba(255, 255, 255, .035);
+  color: #f7f8f8;
+}
+
+.company-client-edit-field textarea,
+.company-client-doc-desc-input {
+  min-height: 116px;
+}
+
+.company-client-doc-grid {
+  gap: 12px;
+}
+
+.company-client-doc-card.is-edit {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .03);
+}
+
+.company-client-doc-card.is-edit .company-client-doc-meta {
+  grid-template-columns: minmax(0, 1fr) 120px;
+}
+
+.company-client-stat {
+  min-height: 108px;
+  padding: 16px 16px 14px;
+  border-radius: 16px;
+}
+
+.company-client-stat-value {
+  font-size: clamp(24px, 1.9vw, 32px);
+}
+
+.company-client-recent-list li a,
+.company-client-staging-link {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .025);
+  border: 1px solid rgba(255, 255, 255, .04);
+}
+
+.company-client-footer-edit .company-client-edit-field {
+  max-width: none;
+}
+
+.company-client-footer-edit input {
+  min-height: 44px;
+}
+
+.company-client-edit-bar {
+  min-height: 68px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(14, 16, 20, .96);
+  border-color: rgba(255, 255, 255, .06);
+  box-shadow: 0 14px 32px rgba(8, 12, 18, .22);
+}
+
+.company-client-edit-bar-message {
+  color: #c3cbd7;
+}
+
+.company-client-edit-bar-discard {
+  background: rgba(255, 255, 255, .03);
+  border-color: rgba(255, 255, 255, .06);
+  color: #cfd5df;
+}
+
+.company-client-edit-bar-save {
+  box-shadow: none;
+}
+
+@media (max-width: 720px) {
+  .company-client-panel-header,
+  .company-client-side-head {
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+
+  .company-client-branding-panel,
+  .company-client-docs-panel,
+  .company-client-side-card,
+  .company-client-am-panel {
+    padding: 0 16px 16px;
+  }
+
+  .company-client-welcome {
+    padding: 20px 16px;
+    min-height: 0;
+  }
+}
+
+/* Refined light edit-page styling */
+.company-client-shell.is-edit {
+  background:
+    radial-gradient(circle at top left, rgba(22, 163, 74, .08), transparent 22%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-primary) 10%, transparent), transparent 24%),
+    linear-gradient(180deg, #f5f6f8 0%, #edf1f5 100%);
+}
+
+.company-client-shell.is-edit .company-client-header,
+.company-client-shell[data-theme="light"] .company-client-header {
+  background: rgba(255, 255, 255, .88);
+  color: var(--ds-text-primary);
+  border-bottom: 1px solid rgba(148, 163, 184, .18);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .08);
+}
+
+.company-client-shell.is-edit .company-client-name,
+.company-client-shell[data-theme="light"] .company-client-name,
+.company-client-shell.is-edit .company-client-user-email,
+.company-client-shell[data-theme="light"] .company-client-user-email {
+  color: var(--ds-text-primary);
+}
+
+.company-client-shell.is-edit .company-client-edit-status,
+.company-client-shell.is-edit .company-client-theme-toggle,
+.company-client-shell.is-edit .company-client-edit-toggle,
+.company-client-shell.is-edit .company-client-backoffice-link,
+.company-client-shell.is-edit .company-client-user-trigger {
+  border-color: rgba(148, 163, 184, .18);
+  background: rgba(255, 255, 255, .82);
+  color: var(--ds-text-primary);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .05);
+}
+
+.company-client-shell.is-edit .company-client-edit-status {
+  background: #daf5e6;
+  color: #166534;
+  border-color: rgba(22, 163, 74, .18);
+}
+
+.company-client-shell.is-edit .company-client-theme-toggle:hover,
+.company-client-shell.is-edit .company-client-edit-toggle:hover,
+.company-client-shell.is-edit .company-client-backoffice-link:hover,
+.company-client-shell.is-edit .company-client-user-trigger:hover {
+  background: #fff;
+  border-color: rgba(100, 116, 139, .22);
+}
+
+.company-client-shell.is-edit .company-client-welcome,
+.company-client-shell.is-edit .company-client-branding-panel,
+.company-client-shell.is-edit .company-client-docs-panel,
+.company-client-shell.is-edit .company-client-side-card,
+.company-client-shell.is-edit .company-client-am-panel,
+.company-client-shell.is-edit .company-client-stat {
+  border: 1px solid rgba(148, 163, 184, .18);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(248, 250, 252, .96));
+  box-shadow: 0 16px 34px rgba(15, 23, 42, .08);
+}
+
+.company-client-shell.is-edit .company-client-panel-header,
+.company-client-shell.is-edit .company-client-side-head {
+  background: linear-gradient(180deg, rgba(248, 250, 252, .96), rgba(255, 255, 255, .82));
+  border-bottom: 1px solid rgba(148, 163, 184, .16);
+}
+
+.company-client-shell.is-edit .company-client-panel-header h2,
+.company-client-shell.is-edit .company-client-side-title,
+.company-client-shell.is-edit .company-client-welcome-title,
+.company-client-shell.is-edit .company-client-doc-title,
+.company-client-shell.is-edit .company-client-edit-section-head strong {
+  color: #111827;
+}
+
+.company-client-shell.is-edit .company-client-panel-hint,
+.company-client-shell.is-edit .company-client-panel-count,
+.company-client-shell.is-edit .company-client-side-body,
+.company-client-shell.is-edit .company-client-side-hint,
+.company-client-shell.is-edit .company-client-doc-desc,
+.company-client-shell.is-edit .company-client-doc-audience,
+.company-client-shell.is-edit .company-client-stat-hint,
+.company-client-shell.is-edit .company-client-welcome-body {
+  color: #64748b;
+}
+
+.company-client-shell.is-edit .company-client-edit-field > span,
+.company-client-shell.is-edit .company-client-stat-label,
+.company-client-shell.is-edit .company-client-welcome-kicker,
+.company-client-shell.is-edit .company-client-edit-section-kicker {
+  color: #64748b;
+}
+
+.company-client-shell.is-edit .company-client-welcome {
+  min-height: 0;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-primary) 10%, transparent), transparent 28%),
+    linear-gradient(180deg, #ffffff, #f8fafc);
+}
+
+.company-client-shell.is-edit .company-client-branding-grid {
+  gap: 18px;
+}
+
+.company-client-shell.is-edit .company-client-brand-preview {
+  border: 1px solid rgba(148, 163, 184, .16);
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+.company-client-shell.is-edit .company-client-brand-preview em,
+.company-client-shell.is-edit .company-client-brand-preview-kicker {
+  color: #64748b;
+}
+
+.company-client-shell.is-edit .company-client-edit-field input[type="text"],
+.company-client-shell.is-edit .company-client-edit-field input[type="url"],
+.company-client-shell.is-edit .company-client-edit-field input[type="email"],
+.company-client-shell.is-edit .company-client-edit-field input[type="search"],
+.company-client-shell.is-edit .company-client-edit-field textarea,
+.company-client-shell.is-edit .company-client-edit-field select,
+.company-client-shell.is-edit .company-client-doc-type-input,
+.company-client-shell.is-edit .company-client-doc-status-input,
+.company-client-shell.is-edit .company-client-doc-title-input,
+.company-client-shell.is-edit .company-client-doc-audience-input,
+.company-client-shell.is-edit .company-client-doc-desc-input {
+  border: 1px solid rgba(148, 163, 184, .18);
+  background: #ffffff;
+  color: #111827;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .92);
+}
+
+.company-client-shell.is-edit .company-client-edit-field input:focus,
+.company-client-shell.is-edit .company-client-edit-field textarea:focus,
+.company-client-shell.is-edit .company-client-edit-field select:focus,
+.company-client-shell.is-edit .company-client-doc-type-input:focus,
+.company-client-shell.is-edit .company-client-doc-status-input:focus,
+.company-client-shell.is-edit .company-client-doc-title-input:focus,
+.company-client-shell.is-edit .company-client-doc-audience-input:focus,
+.company-client-shell.is-edit .company-client-doc-desc-input:focus {
+  border-color: color-mix(in srgb, var(--brand-primary) 40%, rgba(148, 163, 184, .18));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-primary) 12%, transparent);
+}
+
+.company-client-shell.is-edit .company-client-stat {
+  min-height: 112px;
+}
+
+.company-client-shell.is-edit .company-client-stat.is-primary {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brand-primary) 10%, #ffffff), #ffffff);
+  border-color: color-mix(in srgb, var(--brand-primary) 20%, rgba(148, 163, 184, .18));
+}
+
+.company-client-shell.is-edit .company-client-stat-value {
+  color: #111827;
+}
+
+.company-client-shell.is-edit .company-client-doc-card.is-edit {
+  border: 1px solid rgba(148, 163, 184, .16);
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, .05);
+}
+
+.company-client-shell.is-edit .company-client-side-card .ds-status,
+.company-client-shell.is-edit .company-client-docs-panel .ds-status,
+.company-client-shell.is-edit .company-client-branding-panel .ds-status,
+.company-client-shell.is-edit .company-client-am-panel .ds-status {
+  background: rgba(255, 255, 255, .92);
+  border-color: rgba(148, 163, 184, .16);
+}
+
+.company-client-shell.is-edit .company-client-edit-bar {
+  background: rgba(255, 255, 255, .88);
+  border: 1px solid rgba(148, 163, 184, .18);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, .12);
+}
+
+.company-client-shell.is-edit .company-client-edit-bar-message,
+.company-client-shell.is-edit .company-client-edit-bar-clean {
+  color: #475569;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar-discard {
+  background: #fff;
+  border-color: rgba(148, 163, 184, .18);
+  color: #334155;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar-save {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--brand-primary) 20%, transparent);
+}
+
+/* Final hard override for the company portal edit screen */
+.company-client-shell.is-edit {
+  background:
+    radial-gradient(circle at top center, rgba(255, 255, 255, .92), rgba(248, 250, 252, .9) 48%, rgba(241, 245, 249, .95) 100%) !important;
+}
+
+.company-client-shell.is-edit .company-client-main,
+.company-client-shell.is-edit .company-client-content,
+.company-client-shell.is-edit .company-client-edit-shell,
+.company-client-shell.is-edit .company-client-edit-main {
+  background: transparent !important;
+}
+
+.company-client-shell.is-edit .company-client-welcome,
+.company-client-shell.is-edit .company-client-branding-panel,
+.company-client-shell.is-edit .company-client-docs-panel,
+.company-client-shell.is-edit .company-client-side-card,
+.company-client-shell.is-edit .company-client-am-panel,
+.company-client-shell.is-edit .company-client-stat,
+.company-client-shell.is-edit .company-client-doc-card.is-edit {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(248, 250, 252, .96)) !important;
+  border: 1px solid rgba(226, 232, 240, .95) !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, .08) !important;
+}
+
+.company-client-shell.is-edit .company-client-panel-header,
+.company-client-shell.is-edit .company-client-side-head,
+.company-client-shell.is-edit .company-client-doc-head {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(248, 250, 252, .82)) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, .92) !important;
+}
+
+.company-client-shell.is-edit .company-client-panel-header h2,
+.company-client-shell.is-edit .company-client-side-title,
+.company-client-shell.is-edit .company-client-welcome-title,
+.company-client-shell.is-edit .company-client-doc-title,
+.company-client-shell.is-edit .company-client-edit-section-head strong,
+.company-client-shell.is-edit .company-client-edit-field strong,
+.company-client-shell.is-edit .company-client-brand-preview strong {
+  color: #0f172a !important;
+}
+
+.company-client-shell.is-edit .company-client-panel-hint,
+.company-client-shell.is-edit .company-client-panel-count,
+.company-client-shell.is-edit .company-client-side-body,
+.company-client-shell.is-edit .company-client-side-hint,
+.company-client-shell.is-edit .company-client-doc-desc,
+.company-client-shell.is-edit .company-client-doc-audience,
+.company-client-shell.is-edit .company-client-stat-hint,
+.company-client-shell.is-edit .company-client-welcome-body,
+.company-client-shell.is-edit .company-client-brand-preview em,
+.company-client-shell.is-edit .company-client-brand-preview-kicker {
+  color: #64748b !important;
+}
+
+.company-client-shell.is-edit .company-client-edit-field > span,
+.company-client-shell.is-edit .company-client-stat-label,
+.company-client-shell.is-edit .company-client-welcome-kicker,
+.company-client-shell.is-edit .company-client-edit-section-kicker,
+.company-client-shell.is-edit .company-client-doc-label {
+  color: #475569 !important;
+}
+
+.company-client-shell.is-edit .company-client-welcome {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-primary) 8%, transparent), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(248, 250, 252, .96)) !important;
+}
+
+.company-client-shell.is-edit .company-client-edit-field input[type="text"],
+.company-client-shell.is-edit .company-client-edit-field input[type="url"],
+.company-client-shell.is-edit .company-client-edit-field input[type="email"],
+.company-client-shell.is-edit .company-client-edit-field input[type="search"],
+.company-client-shell.is-edit .company-client-edit-field textarea,
+.company-client-shell.is-edit .company-client-edit-field select,
+.company-client-shell.is-edit .company-client-doc-type-input,
+.company-client-shell.is-edit .company-client-doc-status-input,
+.company-client-shell.is-edit .company-client-doc-title-input,
+.company-client-shell.is-edit .company-client-doc-audience-input,
+.company-client-shell.is-edit .company-client-doc-desc-input {
+  background: #fff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(203, 213, 225, .95) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .92) !important;
+}
+
+.company-client-shell.is-edit .company-client-edit-field textarea {
+  min-height: 144px !important;
+}
+
+.company-client-shell.is-edit .company-client-edit-field input::placeholder,
+.company-client-shell.is-edit .company-client-edit-field textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar {
+  background: rgba(255, 255, 255, .94) !important;
+  border: 1px solid rgba(226, 232, 240, .95) !important;
+  box-shadow: 0 22px 50px rgba(15, 23, 42, .14) !important;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar-message,
+.company-client-shell.is-edit .company-client-edit-bar-clean,
+.company-client-shell.is-edit .company-client-edit-bar-discard {
+  color: #475569 !important;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar-discard {
+  background: rgba(255, 255, 255, .96) !important;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar-save {
+  color: #fff !important;
+}
+
+/* Unified edit-page polish: typography, themes, responsive structure */
+.company-client-shell.is-edit {
+  font-family: var(--ds-font-body);
+  color: var(--ds-text-primary);
+}
+
+.company-client-shell.is-edit .company-client-main {
+  width: min(1440px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: clamp(18px, 2.2vw, 32px) 0 136px;
+  gap: clamp(18px, 2vw, 28px);
+}
+
+.company-client-shell.is-edit .company-client-name,
+.company-client-shell.is-edit .company-client-panel-header h2,
+.company-client-shell.is-edit .company-client-side-title,
+.company-client-shell.is-edit .company-client-welcome-title,
+.company-client-shell.is-edit .company-client-doc-title,
+.company-client-shell.is-edit .company-client-edit-section-head strong,
+.company-client-shell.is-edit .company-client-stat-value {
+  font-family: var(--ds-font-display) !important;
+  letter-spacing: -0.02em;
+}
+
+.company-client-shell.is-edit .company-client-name {
+  font-size: clamp(18px, 1.4vw, 22px);
+  font-weight: var(--ds-font-weight-bold);
+}
+
+.company-client-shell.is-edit .company-client-panel-header,
+.company-client-shell.is-edit .company-client-side-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.company-client-shell.is-edit .company-client-panel-header h2,
+.company-client-shell.is-edit .company-client-side-title,
+.company-client-shell.is-edit .company-client-edit-section-head strong {
+  margin: 0;
+  font-size: clamp(22px, 2vw, 30px);
+  line-height: 1.08;
+}
+
+.company-client-shell.is-edit .company-client-panel-hint,
+.company-client-shell.is-edit .company-client-panel-count,
+.company-client-shell.is-edit .company-client-side-body,
+.company-client-shell.is-edit .company-client-side-hint,
+.company-client-shell.is-edit .company-client-doc-desc,
+.company-client-shell.is-edit .company-client-doc-audience,
+.company-client-shell.is-edit .company-client-stat-hint,
+.company-client-shell.is-edit .company-client-welcome-body {
+  font-size: var(--ds-text-md);
+  line-height: 1.65;
+}
+
+.company-client-shell.is-edit .company-client-edit-field > span,
+.company-client-shell.is-edit .company-client-stat-label,
+.company-client-shell.is-edit .company-client-welcome-kicker,
+.company-client-shell.is-edit .company-client-edit-section-kicker,
+.company-client-shell.is-edit .company-client-doc-type,
+.company-client-shell.is-edit .company-client-recent-type,
+.company-client-shell.is-edit .company-client-doc-status {
+  font-family: var(--ds-font-display) !important;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-font-weight-heavy);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.company-client-shell.is-edit .company-client-welcome-title {
+  margin: 0 0 10px;
+  font-size: clamp(30px, 3vw, 44px) !important;
+  line-height: .98;
+}
+
+.company-client-shell.is-edit .company-client-welcome-edit,
+.company-client-shell.is-edit .company-client-branding-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.company-client-shell.is-edit .company-client-welcome-edit .company-client-edit-section-head {
+  grid-column: 1 / -1;
+}
+
+.company-client-shell.is-edit .company-client-welcome-edit label:last-child {
+  grid-column: 1 / -1;
+}
+
+.company-client-shell.is-edit .company-client-brand-preview {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-height: 196px;
+  padding: 18px;
+  border-radius: 20px;
+}
+
+.company-client-shell.is-edit .company-client-edit-field,
+.company-client-shell.is-edit .company-client-doc-card.is-edit {
+  gap: 10px;
+}
+
+.company-client-shell.is-edit .company-client-edit-field input[type="text"],
+.company-client-shell.is-edit .company-client-edit-field input[type="url"],
+.company-client-shell.is-edit .company-client-edit-field input[type="email"],
+.company-client-shell.is-edit .company-client-edit-field input[type="search"],
+.company-client-shell.is-edit .company-client-edit-field textarea,
+.company-client-shell.is-edit .company-client-edit-field select,
+.company-client-shell.is-edit .company-client-doc-type-input,
+.company-client-shell.is-edit .company-client-doc-status-input,
+.company-client-shell.is-edit .company-client-doc-title-input,
+.company-client-shell.is-edit .company-client-doc-audience-input,
+.company-client-shell.is-edit .company-client-doc-desc-input {
+  min-height: 48px;
+  border-radius: 14px !important;
+  padding: 13px 15px !important;
+  font-size: var(--ds-text-md);
+  line-height: 1.45;
+}
+
+.company-client-shell.is-edit .company-client-edit-field textarea,
+.company-client-shell.is-edit .company-client-doc-desc-input {
+  min-height: 132px !important;
+  resize: vertical;
+}
+
+.company-client-shell.is-edit .company-client-color-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.company-client-shell.is-edit .company-client-color-row input[type="color"] {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  padding: 3px;
+  border-radius: 14px;
+  border: 1px solid rgba(203, 213, 225, .95);
+  background: transparent;
+}
+
+.company-client-shell.is-edit .company-client-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.company-client-shell.is-edit .company-client-stat {
+  min-height: 124px;
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+}
+
+.company-client-shell.is-edit .company-client-stat-value {
+  font-size: clamp(26px, 2.2vw, 34px);
+  line-height: 1.05;
+}
+
+.company-client-shell.is-edit .company-client-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, .9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.company-client-shell.is-edit .company-client-side {
+  display: grid;
+  gap: 18px;
+}
+
+.company-client-shell.is-edit .company-client-doc-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.company-client-shell.is-edit .company-client-doc-card.is-edit {
+  border-radius: 20px;
+  padding: 14px;
+}
+
+.company-client-shell.is-edit .company-client-doc-card.is-edit .company-client-doc-meta {
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 12px;
+}
+
+.company-client-shell.is-edit .company-client-footer-edit {
+  width: min(1440px, calc(100% - 32px));
+  margin: 0 auto 100px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.company-client-shell.is-edit .company-client-footer-edit .company-client-edit-field {
+  max-width: none;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar {
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: auto;
+  min-height: 78px;
+  padding: 14px 16px;
+  border-radius: 20px;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar-actions {
+  gap: 10px;
+}
+
+.company-client-shell.is-edit .company-client-edit-bar-discard,
+.company-client-shell.is-edit .company-client-edit-bar-save {
+  min-height: 48px;
+  min-width: 136px;
+  border-radius: 14px;
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-font-weight-heavy);
+}
+
+.company-client-shell.is-edit[data-theme="light"] {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, .92), transparent 24%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-primary) 9%, transparent), transparent 28%),
+    linear-gradient(180deg, #f7f9fc 0%, #edf2f7 100%) !important;
+}
+
+.company-client-shell.is-edit[data-theme="light"] .company-client-header {
+  background: rgba(255, 255, 255, .88) !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid rgba(226, 232, 240, .95) !important;
+  backdrop-filter: blur(18px);
+}
+
+.company-client-shell.is-edit[data-theme="light"] .company-client-name,
+.company-client-shell.is-edit[data-theme="light"] .company-client-user-email,
+.company-client-shell.is-edit[data-theme="light"] .company-client-panel-header h2,
+.company-client-shell.is-edit[data-theme="light"] .company-client-side-title,
+.company-client-shell.is-edit[data-theme="light"] .company-client-welcome-title,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-title,
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-section-head strong,
+.company-client-shell.is-edit[data-theme="light"] .company-client-stat-value {
+  color: #0f172a !important;
+}
+
+.company-client-shell.is-edit[data-theme="light"] .company-client-welcome,
+.company-client-shell.is-edit[data-theme="light"] .company-client-branding-panel,
+.company-client-shell.is-edit[data-theme="light"] .company-client-docs-panel,
+.company-client-shell.is-edit[data-theme="light"] .company-client-side-card,
+.company-client-shell.is-edit[data-theme="light"] .company-client-am-panel,
+.company-client-shell.is-edit[data-theme="light"] .company-client-stat,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-card.is-edit {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(247, 250, 252, .96)) !important;
+  border: 1px solid rgba(226, 232, 240, .95) !important;
+  box-shadow: 0 20px 44px rgba(15, 23, 42, .08) !important;
+}
+
+.company-client-shell.is-edit[data-theme="light"] .company-client-panel-header,
+.company-client-shell.is-edit[data-theme="light"] .company-client-side-head {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(248, 250, 252, .82)) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, .92) !important;
+}
+
+.company-client-shell.is-edit[data-theme="light"] .company-client-panel-hint,
+.company-client-shell.is-edit[data-theme="light"] .company-client-panel-count,
+.company-client-shell.is-edit[data-theme="light"] .company-client-side-body,
+.company-client-shell.is-edit[data-theme="light"] .company-client-side-hint,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-desc,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-audience,
+.company-client-shell.is-edit[data-theme="light"] .company-client-stat-hint,
+.company-client-shell.is-edit[data-theme="light"] .company-client-welcome-body,
+.company-client-shell.is-edit[data-theme="light"] .company-client-brand-preview em,
+.company-client-shell.is-edit[data-theme="light"] .company-client-brand-preview-kicker {
+  color: #64748b !important;
+}
+
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-field > span,
+.company-client-shell.is-edit[data-theme="light"] .company-client-stat-label,
+.company-client-shell.is-edit[data-theme="light"] .company-client-welcome-kicker,
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-section-kicker,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-type,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-status,
+.company-client-shell.is-edit[data-theme="light"] .company-client-recent-type {
+  color: #475569 !important;
+}
+
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-field input[type="text"],
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-field input[type="url"],
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-field input[type="email"],
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-field input[type="search"],
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-field textarea,
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-field select,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-type-input,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-status-input,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-title-input,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-audience-input,
+.company-client-shell.is-edit[data-theme="light"] .company-client-doc-desc-input,
+.company-client-shell.is-edit[data-theme="light"] .company-client-theme-toggle,
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-toggle,
+.company-client-shell.is-edit[data-theme="light"] .company-client-backoffice-link,
+.company-client-shell.is-edit[data-theme="light"] .company-client-user-trigger,
+.company-client-shell.is-edit[data-theme="light"] .company-client-edit-bar-discard {
+  background: rgba(255, 255, 255, .94) !important;
+  color: #0f172a !important;
+  border-color: rgba(203, 213, 225, .95) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] {
+  color: #e5edf5;
+  background:
+    radial-gradient(circle at top left, rgba(99, 205, 255, .08), transparent 20%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-primary) 18%, transparent), transparent 24%),
+    linear-gradient(180deg, #09111d 0%, #101826 50%, #0f1725 100%) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-header {
+  background: rgba(9, 15, 24, .82) !important;
+  color: #f8fbff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+  box-shadow: 0 18px 44px rgba(2, 6, 23, .34) !important;
+  backdrop-filter: blur(18px);
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-name,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-user-email,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-panel-header h2,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-side-title,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-welcome-title,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-title,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-section-head strong,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-stat-value,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-recent-title {
+  color: #f8fbff !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-welcome,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-branding-panel,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-docs-panel,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-side-card,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-am-panel,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-stat,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-card.is-edit {
+  background:
+    linear-gradient(180deg, rgba(18, 27, 41, .94), rgba(12, 20, 32, .98)) !important;
+  border: 1px solid rgba(148, 163, 184, .14) !important;
+  box-shadow: 0 24px 48px rgba(2, 6, 23, .34) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-panel-header,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-side-head {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .01)) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, .06) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-panel-hint,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-panel-count,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-side-body,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-side-hint,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-desc,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-audience,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-stat-hint,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-welcome-body,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-brand-preview em,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-brand-preview-kicker,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-recent-note {
+  color: #94a3b8 !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field > span,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-stat-label,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-welcome-kicker,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-section-kicker,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-type,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-status,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-recent-type {
+  color: #c0cad6 !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field input[type="text"],
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field input[type="url"],
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field input[type="email"],
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field input[type="search"],
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field textarea,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field select,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-type-input,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-status-input,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-title-input,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-audience-input,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-doc-desc-input {
+  background: rgba(15, 23, 36, .92) !important;
+  color: #f8fbff !important;
+  border-color: rgba(148, 163, 184, .18) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field input::placeholder,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-field textarea::placeholder {
+  color: #7d8ba1 !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-theme-toggle,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-toggle,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-backoffice-link,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-user-trigger,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-bar-discard {
+  background: rgba(255, 255, 255, .05) !important;
+  color: #f8fbff !important;
+  border-color: rgba(148, 163, 184, .16) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-status {
+  background: rgba(20, 83, 45, .92) !important;
+  color: #dcfce7 !important;
+  border-color: rgba(74, 222, 128, .2) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-brand-preview {
+  background: linear-gradient(180deg, rgba(17, 26, 41, .8), rgba(10, 18, 30, .96)) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-bar {
+  background: rgba(8, 14, 24, .88) !important;
+  border-color: rgba(148, 163, 184, .14) !important;
+  box-shadow: 0 28px 60px rgba(2, 6, 23, .4) !important;
+}
+
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-bar-message,
+.company-client-shell.is-edit[data-theme="dark"] .company-client-edit-bar-clean {
+  color: #c8d3df !important;
+}
+
+@media (max-width: 1280px) {
+  .company-client-shell.is-edit .company-client-main,
+  .company-client-shell.is-edit .company-client-footer-edit {
+    width: min(100% - 28px, 1180px);
+  }
+
+  .company-client-shell.is-edit .company-client-grid {
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, .9fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .company-client-shell.is-edit .company-client-main,
+  .company-client-shell.is-edit .company-client-footer-edit {
+    width: min(100% - 24px, 100%);
+  }
+
+  .company-client-shell.is-edit .company-client-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .company-client-shell.is-edit .company-client-grid,
+  .company-client-shell.is-edit .company-client-welcome-edit,
+  .company-client-shell.is-edit .company-client-branding-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .company-client-shell.is-edit .company-client-brand-preview,
+  .company-client-shell.is-edit .company-client-welcome-edit label:last-child {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .company-client-shell.is-edit .company-client-header {
+    padding: 12px 14px !important;
+  }
+
+  .company-client-shell.is-edit .company-client-header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .company-client-shell.is-edit .company-client-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .company-client-shell.is-edit .company-client-doc-card.is-edit .company-client-doc-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .company-client-shell.is-edit .company-client-edit-bar {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    padding: 14px;
+  }
+
+  .company-client-shell.is-edit .company-client-edit-bar-actions {
+    width: 100%;
+  }
+
+  .company-client-shell.is-edit .company-client-edit-bar-discard,
+  .company-client-shell.is-edit .company-client-edit-bar-save {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .company-client-shell.is-edit .company-client-main {
+    width: calc(100% - 20px);
+    padding-bottom: 152px;
+  }
+
+  .company-client-shell.is-edit .company-client-branding-panel,
+  .company-client-shell.is-edit .company-client-docs-panel,
+  .company-client-shell.is-edit .company-client-side-card,
+  .company-client-shell.is-edit .company-client-am-panel {
+    padding: 0 14px 14px;
+    border-radius: 18px;
+  }
+
+  .company-client-shell.is-edit .company-client-panel-header,
+  .company-client-shell.is-edit .company-client-side-head {
+    margin-inline: -14px;
+    padding: 14px;
+  }
+
+  .company-client-shell.is-edit .company-client-welcome {
+    padding: 18px 14px;
+    border-radius: 18px;
+  }
+
+  .company-client-shell.is-edit .company-client-welcome-title {
+    font-size: 28px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-client-shell.is-edit .company-client-header-actions {
+    gap: 8px;
+  }
+
+  .company-client-shell.is-edit .company-client-theme-toggle,
+  .company-client-shell.is-edit .company-client-edit-toggle,
+  .company-client-shell.is-edit .company-client-backoffice-link,
+  .company-client-shell.is-edit .company-client-user-trigger,
+  .company-client-shell.is-edit .company-client-edit-status {
+    min-height: 40px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .company-client-shell.is-edit .company-client-user-menu {
+    width: 100%;
+  }
+
+  .company-client-shell.is-edit .company-client-user-trigger {
+    width: 100%;
+  }
+
+  .company-client-shell.is-edit .company-client-edit-bar {
+    border-radius: 18px;
+  }
+}
+
+/* Final client-area component alignment */
+.company-client-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.company-client-theme-toggle,
+.company-client-edit-toggle,
+.company-client-backoffice-link,
+.company-client-user-trigger {
+  box-shadow: var(--ds-shadow-xs);
+}
+
+.company-client-docs-panel,
+.company-client-side-card,
+.company-client-am-panel,
+.company-client-branding-panel {
+  overflow: hidden;
+}
+
+.company-client-panel-header,
+.company-client-side-head {
+  margin-bottom: 14px;
+}
+
+.company-client-am-table th,
+.company-client-am-table td {
+  padding: 12px 16px;
+}
+
+.company-client-am-table select {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-primary);
+  background: var(--ds-bg-surface);
+}
+
+.company-client-am-table strong {
+  font-family: var(--ds-font-display);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .company-client-header {
+    align-items: flex-start;
+  }
+
+  .company-client-brand {
+    min-width: 0;
+  }
+
+  .company-client-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .company-client-user-menu {
+    max-width: 100%;
+  }
+
+  .company-client-user-trigger {
+    max-width: 100%;
+  }
+
+  .company-client-panel-header,
+  .company-client-side-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .company-client-panel-count {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-client-header {
+    padding: 12px;
+  }
+
+  .company-client-main {
+    width: calc(100% - 24px);
+    padding-top: 18px;
+  }
+
+  .company-client-user-email {
+    max-width: none;
+  }
+
+  .company-client-docs-panel,
+  .company-client-side-card,
+  .company-client-am-panel,
+  .company-client-branding-panel {
+    padding-inline: 14px;
+  }
+
+  .company-client-search {
+    flex-basis: 100%;
+  }
+
+  .company-client-chip {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+  }
+}

@@ -1,0 +1,356 @@
+.ds-text-display {
+  font-family: var(--ds-font-display);
+}
+
+.ds-text-body {
+  font-family: var(--ds-font-body);
+}
+
+.ds-text-mono {
+  font-family: var(--ds-font-mono);
+}
+
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  min-height: 40px;
+  border: var(--ds-border-width-thin) solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-bg-surface);
+  color: var(--ds-text-primary);
+  padding: 8px 16px;
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-md);
+  font-weight: var(--ds-font-weight-heavy);
+  line-height: 1;
+  box-shadow: var(--ds-shadow-xs);
+  white-space: nowrap;
+}
+
+.ds-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--ds-border-strong);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-btn:focus-visible {
+  outline: 3px solid var(--ds-focus-ring);
+  outline-offset: 2px;
+}
+
+.ds-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.ds-btn-primary {
+  border-color: var(--ds-accent-primary);
+  background: var(--ds-accent-primary);
+  color: var(--ds-text-inverse);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--ds-accent-primary) 22%, transparent);
+}
+
+.ds-btn-primary:hover:not(:disabled) {
+  border-color: var(--ds-accent-primary-hover);
+  background: var(--ds-accent-primary-hover);
+}
+
+.ds-btn-secondary {
+  border-color: var(--ds-border-default);
+  background: var(--ds-bg-surface);
+  color: var(--ds-text-primary);
+}
+
+.ds-btn-outline {
+  border-color: var(--ds-border-strong);
+  background: transparent;
+}
+
+.ds-btn-ghost {
+  border-color: transparent;
+  background: var(--ds-bg-surface-soft);
+}
+
+.ds-btn-danger {
+  border-color: color-mix(in srgb, var(--ds-accent-primary) 35%, transparent);
+  background: var(--ds-status-danger-bg);
+  color: var(--ds-status-danger-fg);
+}
+
+.ds-btn-sm {
+  min-height: 32px;
+  padding: 6px 12px;
+  font-size: var(--ds-text-sm);
+}
+
+.ds-btn-lg {
+  min-height: 48px;
+  padding: 12px 24px;
+  font-size: var(--ds-text-lg);
+}
+
+.ds-input,
+.ds-select,
+.ds-textarea {
+  width: 100%;
+  border: var(--ds-border-width-thin) solid var(--ds-border-strong);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-bg-surface);
+  color: var(--ds-text-primary);
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: var(--ds-text-md);
+  line-height: 1.45;
+  font: inherit;
+  outline: none;
+}
+
+.ds-textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: var(--ds-leading-normal);
+}
+
+.ds-input:focus,
+.ds-select:focus,
+.ds-textarea:focus,
+.ds-input:focus-visible,
+.ds-select:focus-visible,
+.ds-textarea:focus-visible {
+  border-color: var(--ds-accent-secondary);
+  box-shadow: 0 0 0 3px var(--ds-focus-ring);
+}
+
+.ds-field {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+.ds-label {
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ds-helper-text {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-normal);
+}
+
+.ds-card {
+  display: grid;
+  gap: var(--ds-space-3);
+  border: var(--ds-border-width-thin) solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-bg-surface);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-card-body {
+  padding: var(--ds-space-4);
+}
+
+.ds-card-panel {
+  background: var(--ds-bg-surface);
+}
+
+.ds-card-feature {
+  background: linear-gradient(180deg, var(--ds-bg-surface), var(--ds-bg-surface-soft));
+}
+
+.ds-card-interactive:hover {
+  border-color: var(--ds-border-strong);
+  box-shadow: var(--ds-shadow-md);
+}
+
+.ds-badge,
+.ds-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  border-radius: var(--ds-radius-pill);
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: var(--ds-font-weight-black);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ds-badge-neutral,
+.ds-status-neutral {
+  background: var(--ds-status-neutral-bg);
+  color: var(--ds-status-neutral-fg);
+}
+
+.ds-badge-info,
+.ds-status-info {
+  background: var(--ds-status-info-bg);
+  color: var(--ds-status-info-fg);
+}
+
+.ds-badge-success,
+.ds-status-success,
+.ds-status-active,
+.ds-status-published {
+  background: var(--ds-status-success-bg);
+  color: var(--ds-status-success-fg);
+}
+
+.ds-badge-warning,
+.ds-status-warning,
+.ds-status-review {
+  background: var(--ds-status-warning-bg);
+  color: var(--ds-status-warning-fg);
+}
+
+.ds-badge-danger,
+.ds-status-danger,
+.ds-status-draft,
+.ds-status-archived {
+  background: var(--ds-status-danger-bg);
+  color: var(--ds-status-danger-fg);
+}
+
+.ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: var(--ds-bg-surface);
+  color: var(--ds-text-primary);
+}
+
+.ds-table th,
+.ds-table td {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-bottom: var(--ds-border-width-thin) solid var(--ds-border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+
+.ds-table th {
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-font-weight-black);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ds-table tbody tr:hover {
+  background: var(--ds-bg-surface-soft);
+}
+
+/* ── Sidebar Navigation Primitives ──────────────────────────────── */
+
+.ds-nav-group {
+  padding: 0 8px 4px;
+  margin-bottom: 4px;
+  font-family: var(--ds-font-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+  line-height: 1;
+}
+
+.ds-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-font-weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--ds-transition-fast), color var(--ds-transition-fast);
+}
+
+.ds-nav-item:hover {
+  background: var(--ds-bg-surface-soft);
+  color: var(--ds-text-primary);
+}
+
+.ds-nav-item[aria-current="page"],
+.ds-nav-item.active {
+  background: var(--ds-bg-surface-tint);
+  color: var(--ds-accent-secondary);
+  box-shadow: inset 3px 0 0 var(--ds-accent-secondary);
+}
+
+/* ── Stat / KPI Card ─────────────────────────────────────────────── */
+
+.ds-stat {
+  display: grid;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-5) var(--ds-space-5) var(--ds-space-5) var(--ds-space-4);
+  border: var(--ds-border-width-thin) solid var(--ds-border-subtle);
+  border-left: 3px solid var(--ds-accent-secondary);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-bg-surface);
+  box-shadow: var(--ds-shadow-xs);
+}
+
+.ds-stat-label {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-text-secondary);
+}
+
+.ds-stat-value {
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-3xl);
+  font-weight: var(--ds-font-weight-heavy);
+  letter-spacing: -0.025em;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ds-stat-delta {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-text-muted);
+}
+
+.ds-stat-delta.positive { color: var(--ds-status-success-fg); }
+.ds-stat-delta.negative { color: var(--ds-status-danger-fg); }
+
+/* ── Button Pill Variant ─────────────────────────────────────────── */
+
+.ds-btn-pill {
+  border-radius: var(--ds-radius-pill);
+}
+
+/* ── Button Icon Variant ─────────────────────────────────────────── */
+
+.ds-btn-icon {
+  padding: 0;
+  width: 36px;
+  min-height: 36px;
+  flex-shrink: 0;
+}
+
+.ds-btn-icon.ds-btn-sm {
+  width: 30px;
+  min-height: 30px;
+}
+
+.ds-btn-icon.ds-btn-lg {
+  width: 44px;
+  min-height: 44px;
+}

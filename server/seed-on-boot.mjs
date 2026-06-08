@@ -1,10 +1,12 @@
 // Idempotent boot-time seed. Runs on every server start; only inserts what's missing.
 //
 // Reads admin credentials from env vars:
-//   ADMIN_EMAIL    — admin email; defaults to admin@example.com
-//   ADMIN_PASSWORD — required for first-time seed; subsequent boots ignore it
-//   COMPANY_SLUG   — defaults to 'demo'
-//   COMPANY_NAME   — defaults to 'Demo Company'
+//   SUPERADMIN_EMAIL    — optional platform superadmin email
+//   SUPERADMIN_PASSWORD — optional platform superadmin password
+//   ADMIN_EMAIL         — company-admin email; defaults to admin@example.com
+//   ADMIN_PASSWORD      — required for first-time company-admin seed; subsequent boots ignore it
+//   COMPANY_SLUG        — defaults to 'demo'
+//   COMPANY_NAME        — defaults to 'Demo Company'
 //
 // On a clean database: creates the company, the company-admin user, an initial
 // branding row, and copies server/seed-state.json into the CMS state file so the
@@ -21,12 +23,48 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
 const DEFAULTS = {
+  superadminEmail: 'admin@docpilot.local',
   email: 'admin@example.com',
   // No default password — the operator must set ADMIN_PASSWORD on first deploy.
   companySlug: 'demo',
   companyName: 'Demo Company',
+  superadminName: 'DocPilot Superadmin',
   adminName: 'Platform Admin',
 };
+
+function findPlatformUserByEmail(email) {
+  return findUserByEmail(null, email);
+}
+
+async function ensureSuperadmin() {
+  const email = process.env.SUPERADMIN_EMAIL || DEFAULTS.superadminEmail;
+  const password = process.env.SUPERADMIN_PASSWORD;
+  const name = process.env.SUPERADMIN_NAME || DEFAULTS.superadminName;
+
+  const existing = findPlatformUserByEmail(email);
+  if (existing) {
+    console.log(`[seed] Superadmin "${email}" already exists; skipping.`);
+    return;
+  }
+
+  if (!password) {
+    console.log(
+      `[seed] No SUPERADMIN_PASSWORD env var set — skipping superadmin creation. ` +
+      `Set SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD on first boot to create a platform superadmin.`,
+    );
+    return;
+  }
+
+  const user = await createUser({
+    email,
+    password,
+    name,
+    companyId: null,
+    status: 'active',
+  });
+  setUserRoles(user.id, ['superadmin']);
+  console.log(`[seed] Created superadmin "${email}" -> ${user.id}, role=superadmin`);
+}
 
 function ensureCompany(slug, name) {
   const existing = db.prepare('SELECT * FROM companies WHERE slug = ?').get(slug);
@@ -85,6 +123,7 @@ export async function seedOnBoot() {
   const adminName = process.env.ADMIN_NAME || DEFAULTS.adminName;
 
   ensureCmsState();
+  await ensureSuperadmin();
 
   const company = ensureCompany(slug, name);
 

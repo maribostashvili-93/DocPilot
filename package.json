@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently -k -n API,WEB -c red,blue \"npm:dev:server\" \"npm:dev:web\"",
     "dev:web": "vite",
-    "dev:server": "node server/docpilot-server.mjs",
+    "dev:server": "node --env-file=.env server/docpilot-server.mjs",
     "dev:full": "npm run dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

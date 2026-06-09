@@ -20,6 +20,8 @@ import * as releaseAdapter     from './adapter/releases.mjs';
 import * as researchSources    from './research/sources.mjs';
 import * as researchJobs       from './research/jobs.mjs';
 import * as researchDrafts     from './research/drafts.mjs';
+import * as searchQuery        from './search/query.mjs';
+import * as searchIndexer      from './search/indexer.mjs';
 
 function send(res, status, body, extraHeaders = {}) {
   const headers = {
@@ -693,6 +695,16 @@ export async function handleApiV2(req, res, url) {
   }
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/webhooks\/([A-Za-z0-9_-]+)\/deliveries$/);
   if (m && req.method === 'GET') return routeWebhookDeliveries(req, res, m[1], m[2]);
+
+  // Search
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/search$/);
+  if (m && req.method === 'GET') return routeSearch(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/search\/suggest$/);
+  if (m && req.method === 'GET') return routeSearchSuggest(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/search\/reindex\/document\/([A-Za-z0-9_-]+)$/);
+  if (m && req.method === 'POST') return routeReindexDocument(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/search\/reindex\/product\/([A-Za-z0-9_-]+)$/);
+  if (m && req.method === 'POST') return routeReindexProduct(req, res, m[1], m[2]);
 
   return null; // signal unhandled — fall through to legacy router
 }
@@ -1505,4 +1517,63 @@ function routeWebhookDeliveries(req, res, cid, eid) {
     'SELECT * FROM webhook_deliveries WHERE endpoint_id = ? ORDER BY delivered_at DESC LIMIT 50',
   ).all(eid);
   return send(res, 200, { deliveries });
+}
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+
+function routeSearch(req, res, cid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const url2 = new URL(req.url, 'http://x');
+  const q = url2.searchParams.get('q') ?? '';
+  const locale = url2.searchParams.get('locale') || 'en';
+  const productId = url2.searchParams.get('productId') || null;
+  try {
+    const result = searchQuery.search({ companyId: cid, q, locale, productId });
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, 500, { error: e.message });
+  }
+}
+
+function routeSearchSuggest(req, res, cid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const url2 = new URL(req.url, 'http://x');
+  const q = url2.searchParams.get('q') ?? '';
+  const locale = url2.searchParams.get('locale') || 'en';
+  try {
+    const result = searchQuery.suggest({ companyId: cid, q, locale });
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, 500, { error: e.message });
+  }
+}
+
+function routeReindexDocument(req, res, cid, did) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'document.publish')) return send(res, 403, { error: 'Forbidden' });
+  try {
+    const result = searchIndexer.reindexDocument({ companyId: cid, documentId: did });
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
+}
+
+function routeReindexProduct(req, res, cid, pid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'product.manage')) return send(res, 403, { error: 'Forbidden' });
+  try {
+    const result = searchIndexer.reindexProduct({ companyId: cid, productId: pid });
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
 }

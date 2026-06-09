@@ -404,3 +404,33 @@ CREATE TABLE IF NOT EXISTS webhook_deliveries (
 
 CREATE INDEX IF NOT EXISTS idx_webhook_ep_company ON webhook_endpoints(company_id);
 CREATE INDEX IF NOT EXISTS idx_webhook_del_endpoint ON webhook_deliveries(endpoint_id, delivered_at DESC);
+
+-- ── Phase 7A: Full-Text Search ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS search_documents (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  product_id TEXT REFERENCES products(id) ON DELETE CASCADE,
+  document_id TEXT REFERENCES documents(id) ON DELETE CASCADE,
+  section_id TEXT REFERENCES sections(id) ON DELETE CASCADE,
+  release_snapshot_id TEXT REFERENCES release_snapshots(id) ON DELETE CASCADE,
+  locale TEXT NOT NULL DEFAULT 'en',
+  title TEXT NOT NULL,
+  body_plain TEXT NOT NULL,
+  summary TEXT,
+  keywords TEXT NOT NULL DEFAULT '[]',
+  status TEXT NOT NULL DEFAULT 'active',
+  rank_score REAL NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_search_docs_company_locale
+  ON search_documents(company_id, locale, status);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS search_documents_fts USING fts5(
+  search_document_id UNINDEXED,
+  title,
+  body_plain,
+  summary,
+  keywords
+);

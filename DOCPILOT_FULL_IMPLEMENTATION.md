@@ -11,32 +11,32 @@
 [x] Phase 1    - Planning (complete)
 [x] Phase 2A   - Schema Completion (complete)
 
-[ ] Phase 2B   - Storage Adapter Layer          <- start here
-[ ] Phase 2C   - Permission System Refactor     <- parallel with 2B
-[ ] Phase 2D   - API v2 Content Expansion       <- after 2B + 2C
-[ ] Phase 2E   - Workflow Engine                <- alongside 2D
+[x] Phase 2B   - Storage Adapter Layer
+[x] Phase 2C   - Permission System Refactor
+[x] Phase 2D   - API v2 Content Expansion
+[x] Phase 2E   - Workflow Engine
 
-[ ] Phase 3A   - Component Extraction (primitives)
-[ ] Phase 3B   - Token Completion Pass
-[ ] Phase 3C   - Responsive Audit
-[ ] Phase 3D   - ResearchApp Design System
+[x] Phase 3A   - Component Extraction (primitives)
+[x] Phase 3B   - Token Completion Pass
+[x] Phase 3C   - Responsive Audit
+[x] Phase 3D   - ResearchApp Design System
 
-[ ] Phase 4A   - Comments System
-[ ] Phase 4B   - Workflow Transition UI
-[ ] Phase 4C   - Translation Locale Management
-[ ] Phase 4D   - Product Members
-[ ] Phase 4E   - Release Full Lifecycle UI
+[x] Phase 4A   - Comments System
+[x] Phase 4B   - Workflow Transition UI
+[x] Phase 4C   - Translation Locale Management
+[x] Phase 4D   - Product Members
+[x] Phase 4E   - Release Full Lifecycle UI
 
-[ ] Phase 5A   - Research Backend
-[ ] Phase 5B   - CMS Bridge
+[x] Phase 5A   - Research Backend
+[x] Phase 5B   - CMS Bridge
 
-[ ] Phase 6A   - Reader Modernization
-[ ] Phase 6B   - API Keys + Webhooks
-[ ] Phase 7A   - Search Index + Discovery
-[ ] Phase 7B   - Localization Operations
-[ ] Phase 7C   - Reader Feedback + Analytics
-[ ] Phase 8A   - Integrations Platform
-[ ] Phase 8B   - AI Assist With Human Review
+[x] Phase 6A   - Reader Modernization
+[x] Phase 6B   - API Keys + Webhooks
+[x] Phase 7A   - Search Index + Discovery
+[x] Phase 7B   - Localization Operations
+[x] Phase 7C   - Reader Feedback + Analytics
+[x] Phase 8A   - Integrations Platform
+[x] Phase 8B   - AI Assist With Human Review
 ```
 
 ---

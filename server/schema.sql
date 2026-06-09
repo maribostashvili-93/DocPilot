@@ -434,3 +434,34 @@ CREATE VIRTUAL TABLE IF NOT EXISTS search_documents_fts USING fts5(
   summary,
   keywords
 );
+
+-- ── Phase 7C: Reader Feedback + Analytics ────────────────────────────────────
+CREATE TABLE IF NOT EXISTS reader_feedback (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  document_id TEXT REFERENCES documents(id) ON DELETE CASCADE,
+  section_id TEXT REFERENCES sections(id) ON DELETE CASCADE,
+  locale TEXT,
+  release_snapshot_id TEXT REFERENCES release_snapshots(id) ON DELETE SET NULL,
+  rating TEXT NOT NULL,
+  comment TEXT,
+  url TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_reader_feedback_company ON reader_feedback(company_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reader_feedback_doc ON reader_feedback(document_id);
+
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  event_name TEXT NOT NULL,
+  actor_type TEXT NOT NULL DEFAULT 'reader',
+  document_id TEXT,
+  section_id TEXT,
+  locale TEXT,
+  metadata TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_events_company ON analytics_events(company_id, event_name, created_at DESC);

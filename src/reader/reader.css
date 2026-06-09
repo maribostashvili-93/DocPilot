@@ -1158,3 +1158,23 @@ dialog.search-modal::backdrop { background: rgba(0, 0, 0, .4); }
 @media (max-width: 900px) {
   .docpilot-reader .reader-controls { display: none; }
 }
+
+/* ============================================================
+   Phase 7C — ReaderFeedback widget
+   ============================================================ */
+.docpilot-reader .reader-feedback {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 14px 0; border-top: 1px solid var(--line); margin-top: 32px;
+  font-size: 13.5px; color: var(--ink-3);
+}
+.docpilot-reader .reader-feedback--done { color: var(--ink-2); }
+.docpilot-reader .reader-feedback--comment { flex-direction: column; align-items: flex-start; gap: 8px; }
+.docpilot-reader .reader-feedback-label { color: var(--ink-2); font-weight: 500; }
+.docpilot-reader .reader-feedback-textarea {
+  width: 100%; max-width: 480px; min-height: 70px;
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px; font: inherit; font-size: 13.5px;
+  background: var(--bg-2); color: var(--ink); resize: vertical;
+}
+.docpilot-reader .reader-feedback-textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.docpilot-reader .reader-feedback-actions { display: flex; gap: 8px; }

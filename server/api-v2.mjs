@@ -696,6 +696,16 @@ export async function handleApiV2(req, res, url) {
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/webhooks\/([A-Za-z0-9_-]+)\/deliveries$/);
   if (m && req.method === 'GET') return routeWebhookDeliveries(req, res, m[1], m[2]);
 
+  // Reader analytics / feedback (public — no auth required)
+  if (p === '/api/v2/public/reader/events' && req.method === 'POST') return routePublicReaderEvent(req, res);
+  if (p === '/api/v2/public/reader/feedback' && req.method === 'POST') return routePublicReaderFeedback(req, res);
+
+  // Analytics dashboard
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/analytics\/reader$/);
+  if (m && req.method === 'GET') return routeAnalyticsReader(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/analytics\/search$/);
+  if (m && req.method === 'GET') return routeAnalyticsSearch(req, res, m[1]);
+
   // Localization Ops
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/localization\/overview$/);
   if (m && req.method === 'GET') return routeLocalizationOverview(req, res, m[1]);
@@ -1756,4 +1766,127 @@ async function routeLocalizationMarkReady(req, res, cid) {
      AND section_id IN (SELECT id FROM sections WHERE document_id = ?)`,
   ).run(user.id, now, cid, body.locale.trim(), body.documentId);
   return send(res, 200, { ok: true });
+}
+
+// ─── Reader Analytics + Feedback (Phase 7C) ──────────────────────────────────
+
+async function routePublicReaderEvent(req, res) {
+  const body = await readBody(req).catch(() => ({}));
+  const { companyId, eventName, documentId, sectionId, locale, metadata } = body;
+  if (!companyId || !eventName) return send(res, 400, { error: 'companyId and eventName are required' });
+
+  const ALLOWED_EVENTS = new Set([
+    'reader.page_view', 'reader.search', 'reader.search_click',
+    'reader.feedback_submitted', 'reader.copy_code',
+    'reader.version_switch', 'reader.locale_switch',
+  ]);
+  if (!ALLOWED_EVENTS.has(eventName)) return send(res, 400, { error: 'Unknown event name' });
+
+  db.prepare(
+    `INSERT INTO analytics_events(id, company_id, event_name, actor_type, document_id, section_id, locale, metadata, created_at)
+     VALUES(?, ?, ?, 'reader', ?, ?, ?, ?, ?)`,
+  ).run(makeId('ae'), companyId, eventName, documentId ?? null, sectionId ?? null,
+    locale ?? null, JSON.stringify(metadata ?? {}), nowIso());
+
+  return send(res, 202, { ok: true });
+}
+
+async function routePublicReaderFeedback(req, res) {
+  const body = await readBody(req).catch(() => ({}));
+  const { companyId, documentId, sectionId, locale, rating, comment, url } = body;
+  if (!companyId || !rating) return send(res, 400, { error: 'companyId and rating are required' });
+  if (!['helpful', 'not-helpful', 'neutral'].includes(rating)) {
+    return send(res, 400, { error: 'rating must be helpful, not-helpful, or neutral' });
+  }
+
+  const id = makeId('rf');
+  db.prepare(
+    `INSERT INTO reader_feedback(id, company_id, document_id, section_id, locale, rating, comment, url, created_at)
+     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, companyId, documentId ?? null, sectionId ?? null, locale ?? null,
+    rating, comment ?? null, url ?? null, nowIso());
+
+  return send(res, 201, { ok: true, id });
+}
+
+function routeAnalyticsReader(req, res, cid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+
+  const url2 = new URL(req.url, 'http://x');
+  const days = parseInt(url2.searchParams.get('days') ?? '7', 10) || 7;
+  const since = new Date(Date.now() - days * 86400000).toISOString();
+
+  const views = db.prepare(
+    "SELECT COUNT(*) AS cnt FROM analytics_events WHERE company_id = ? AND event_name = 'reader.page_view' AND created_at >= ?",
+  ).get(cid, since);
+
+  const topDocs = db.prepare(`
+    SELECT document_id, COUNT(*) AS views
+    FROM analytics_events
+    WHERE company_id = ? AND event_name = 'reader.page_view' AND created_at >= ? AND document_id IS NOT NULL
+    GROUP BY document_id ORDER BY views DESC LIMIT 10
+  `).all(cid, since);
+
+  const feedbackRows = db.prepare(
+    'SELECT rating, COUNT(*) AS cnt FROM reader_feedback WHERE company_id = ? AND created_at >= ? GROUP BY rating',
+  ).all(cid, since);
+  const fbMap = Object.fromEntries(feedbackRows.map((r) => [r.rating, r.cnt]));
+  const fbTotal = Object.values(fbMap).reduce((s, v) => s + v, 0);
+  const helpfulPct = fbTotal > 0 ? Math.round(((fbMap['helpful'] ?? 0) / fbTotal) * 100) : 0;
+
+  const localeRows = db.prepare(`
+    SELECT locale, COUNT(*) AS cnt FROM analytics_events
+    WHERE company_id = ? AND event_name = 'reader.page_view' AND created_at >= ? AND locale IS NOT NULL
+    GROUP BY locale ORDER BY cnt DESC
+  `).all(cid, since);
+
+  return send(res, 200, {
+    period: { days, since },
+    metrics: {
+      views7d: views?.cnt ?? 0,
+      helpfulPct,
+      feedbackTotal: fbTotal,
+    },
+    topDocuments: topDocs,
+    localeUsage: localeRows,
+  });
+}
+
+function routeAnalyticsSearch(req, res, cid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+
+  const url2 = new URL(req.url, 'http://x');
+  const days = parseInt(url2.searchParams.get('days') ?? '7', 10) || 7;
+  const since = new Date(Date.now() - days * 86400000).toISOString();
+
+  const searches = db.prepare(`
+    SELECT metadata, created_at FROM analytics_events
+    WHERE company_id = ? AND event_name = 'reader.search' AND created_at >= ?
+    ORDER BY created_at DESC LIMIT 200
+  `).all(cid, since);
+
+  const queryCount = {};
+  let zeroResultCount = 0;
+  for (const row of searches) {
+    const meta = JSON.parse(row.metadata ?? '{}');
+    const q = (meta.query ?? '').trim().toLowerCase();
+    if (q) queryCount[q] = (queryCount[q] ?? 0) + 1;
+    if (meta.resultCount === 0) zeroResultCount++;
+  }
+  const zeroResultPct = searches.length > 0 ? Math.round((zeroResultCount / searches.length) * 100) : 0;
+  const topQueries = Object.entries(queryCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([query, count]) => ({ query, count }));
+
+  return send(res, 200, {
+    period: { days, since },
+    totalSearches: searches.length,
+    zeroResultPct,
+    topQueries,
+  });
 }

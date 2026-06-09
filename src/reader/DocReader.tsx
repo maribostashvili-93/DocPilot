@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ReaderFeedback } from './ReaderFeedback';
 import { useDocReaderState } from './useDocReaderState';
 import { applyReaderTheme, loadSessionMode, resolveReaderTheme, saveSessionMode } from './theme';
 import { Drawer } from './Drawer';
@@ -16,7 +17,7 @@ export type DocReaderModel = {
   sections: { id: string; number: string; title: string; html: string }[];
   product: { name: string; slug: string } | null;
   themePreset: { readerAccent: string; readerDefaultMode: 'light' | 'dark' | 'system' };
-  company: { slug: string; name: string; branding?: { accent?: string; defaultTheme?: 'light' | 'dark' | 'system' } } | null;
+  company: { id?: string; slug: string; name: string; branding?: { accent?: string; defaultTheme?: 'light' | 'dark' | 'system' } } | null;
   siblings: { prev: { id: string; title: string } | null; next: { id: string; title: string } | null };
   availableDocs: DocSelectorItem[];
   availableLocales?: { locale: string; label: string }[];
@@ -327,6 +328,13 @@ export function DocReader({ resolveDoc }: DocReaderProps) {
               </a>
             ) : <span />}
           </nav>
+          {model.company?.id && (
+            <ReaderFeedback
+              companyId={model.company.id}
+              documentId={model.doc.id}
+              locale={model.currentLocale}
+            />
+          )}
         </main>
         <aside className="toc-right" aria-label="Resources">
           <div className="group">

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useTenant } from './TenantContext';
 import './research.css';
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -969,9 +970,12 @@ If you have questions, reach out to your account manager or use the support sect
 function DraftReview({ slug }: { slug: string }) {
   const { draftId } = useParams<{ draftId: string }>();
   const { drafts, updateDraft } = useRC();
+  const tenant = useTenant();
   const navigate = useNavigate();
   const base = `/c/${slug}/admin/research`;
   const [toast, setToast] = useState('');
+  const [showSendDialog, setShowSendDialog] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const draft = drafts.find((d) => d.id === draftId);
 
@@ -986,15 +990,50 @@ function DraftReview({ slug }: { slug: string }) {
     );
   }
 
-  function sendToCMS() {
-    if (!draft) return;
-    updateDraft(draft.id, { status: 'sent-to-cms' });
-    setToast('Draft sent to CMS successfully.');
+  async function handleSendToCms(productId: string) {
+    if (!draft || !tenant) return;
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `/api/v2/companies/${tenant.companyId}/research/drafts/${draft.id}/send-to-cms`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId }),
+        },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error ?? `HTTP ${res.status}`);
+      }
+      updateDraft(draft.id, { status: 'sent-to-cms' });
+      setShowSendDialog(false);
+      setToast('Draft sent to CMS — a new document draft has been created.');
+    } catch (e) {
+      setToast(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function discard() {
+  async function discard() {
     if (!draft) return;
     if (!window.confirm('Discard this draft? This cannot be undone.')) return;
+    if (tenant) {
+      try {
+        const res = await fetch(
+          `/api/v2/companies/${tenant.companyId}/research/drafts/${draft.id}/discard`,
+          { method: 'POST' },
+        );
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setToast(`Error: ${(err as { error?: string }).error ?? `HTTP ${res.status}`}`);
+          return;
+        }
+      } catch {
+        // fallback: update local state anyway
+      }
+    }
     updateDraft(draft.id, { status: 'discarded' });
     navigate(base);
   }
@@ -1050,7 +1089,8 @@ function DraftReview({ slug }: { slug: string }) {
               <button
                 type="button"
                 className="ds-btn ds-btn-primary"
-                onClick={sendToCMS}
+                onClick={() => setShowSendDialog(true)}
+                disabled={busy}
                 style={{ width: '100%', justifyContent: 'center' }}
               >
                 Send to CMS
@@ -1059,6 +1099,7 @@ function DraftReview({ slug }: { slug: string }) {
                 type="button"
                 className="ds-btn ds-btn-danger"
                 onClick={discard}
+                disabled={busy}
                 style={{ width: '100%', justifyContent: 'center' }}
               >
                 Discard Draft
@@ -1086,7 +1127,97 @@ function DraftReview({ slug }: { slug: string }) {
         </div>
       </div>
 
+      {showSendDialog && tenant && (
+        <SendToCmsDialog
+          companyId={tenant.companyId}
+          busy={busy}
+          onConfirm={handleSendToCms}
+          onClose={() => setShowSendDialog(false)}
+        />
+      )}
+
       {toast && <Toast msg={toast} onDone={() => setToast('')} />}
+    </div>
+  );
+}
+
+function SendToCmsDialog({
+  companyId,
+  busy,
+  onConfirm,
+  onClose,
+}: {
+  companyId: string;
+  busy: boolean;
+  onConfirm: (productId: string) => void;
+  onClose: () => void;
+}) {
+  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+  const [productId, setProductId] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    fetch(`/api/v2/companies/${companyId}/products`)
+      .then((r) => r.json())
+      .then((data: { products?: { id: string; name: string }[] }) => {
+        const list = data.products ?? [];
+        setProducts(list);
+        if (list.length > 0) setProductId(list[0].id);
+      })
+      .catch(() => setErr('Could not load products.'))
+      .finally(() => setLoading(false));
+  }, [companyId]);
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!productId) { setErr('Select a product.'); return; }
+    onConfirm(productId);
+  }
+
+  return (
+    <div className="ds-dialog-backdrop" onClick={onClose}>
+      <div className="ds-dialog" onClick={(e) => e.stopPropagation()}>
+        <div className="ds-dialog-header">
+          <h3 className="ds-dialog-title">Send to CMS</h3>
+        </div>
+        <form onSubmit={submit}>
+          <div className="ds-dialog-body">
+            <p style={{ marginTop: 0, marginBottom: 'var(--ds-space-4)' }}>
+              Choose which product this document belongs to. A new draft document will be created in the CMS.
+            </p>
+            {loading ? (
+              <p style={{ color: '#9aaabb', fontSize: 13 }}>Loading products…</p>
+            ) : products.length === 0 ? (
+              <div className="ds-alert ds-alert-warning">No products found. Create a product first.</div>
+            ) : (
+              <div className="ds-field">
+                <label className="ds-label" htmlFor="send-product">Product</label>
+                <select
+                  id="send-product"
+                  className="ds-select"
+                  value={productId}
+                  onChange={(e) => setProductId(e.target.value)}
+                  required
+                >
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {err && <div className="ds-alert ds-alert-danger" style={{ marginTop: 8 }}>{err}</div>}
+          </div>
+          <div className="ds-dialog-footer">
+            <button type="button" className="ds-btn ds-btn-secondary" onClick={onClose} disabled={busy}>
+              Cancel
+            </button>
+            <button type="submit" className="ds-btn ds-btn-primary" disabled={busy || loading || products.length === 0}>
+              {busy ? 'Sending…' : 'Send to CMS'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

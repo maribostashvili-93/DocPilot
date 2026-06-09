@@ -434,6 +434,7 @@ interface DocEntry {
   templateId?: string;
   updatedAt: string;
   sections: number;
+  researchDraftId?: string;
 }
 
 interface SectionEntry {
@@ -1710,7 +1711,7 @@ function DocumentsPage({ docs, setDocs, products, customSections, setCustomSecti
       <div className="document-card-grid">
         {orderedProductDocs.length ? filteredProductDocs.map((doc) => (
           <article className={`document-card ${doc.type}`} key={doc.id}>
-            <div className="document-card-top"><span>{doc.type}</span><Pill status={doc.status} /></div>
+            <div className="document-card-top"><span>{doc.type}</span><Pill status={doc.status} />{doc.researchDraftId && <span className="ds-badge ds-badge-info" style={{ fontSize: 10 }}>From Research</span>}</div>
             <h2>{doc.title}</h2>
             <p>{doc.description}</p>
             <div className="document-template-effect">

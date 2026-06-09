@@ -7184,7 +7184,7 @@ canvas {
 
 .theme-delete {
   border: 1px solid rgba(255, 27, 35, .28);
-  background: #fff7f7;
+  background: transparent;
   color: var(--c-red);
 }
 
@@ -7852,7 +7852,7 @@ canvas {
 }
 
 .documentation-action-cluster .btn.btn-sm.btn-red {
-  box-shadow: 0 14px 28px color-mix(in srgb, var(--brand-primary) 22%, transparent);
+  box-shadow: none;
 }
 
 .revision-buttons {
@@ -8637,7 +8637,7 @@ canvas {
   background: var(--brand-primary);
   color: #fff;
   border-color: var(--brand-primary);
-  box-shadow: 0 14px 28px color-mix(in srgb, var(--brand-primary) 24%, transparent);
+  box-shadow: none;
 }
 
 .company-cms-shell .btn-ghost {
@@ -9356,7 +9356,7 @@ canvas {
 .company-client-user-trigger:hover,
 .company-client-edit-toggle:hover,
 .company-client-admin-cta a:hover {
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .company-client-theme-toggle {
@@ -9367,7 +9367,7 @@ canvas {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--ds-shadow-xs);
+  box-shadow: none;
 }
 
 .company-client-docs-panel,

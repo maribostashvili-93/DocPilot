@@ -1343,11 +1343,11 @@
 .company-client-theme-toggle:hover {
   background: var(--ds-hover, #f1f5f9);
   color: var(--ds-ink, #0f172a);
-  border-color: var(--brand-primary, #ff1b23);
+  border-color: #cbd5e1;
 }
 .company-client-theme-toggle:focus-visible {
-  outline: 2px solid var(--brand-primary, #ff1b23);
-  outline-offset: 2px;
+  outline: 1px solid #cbd5e1;
+  outline-offset: 1px;
 }
 
 /* Dark-mode palette overrides */
@@ -1393,7 +1393,7 @@
   border-color: #262c38;
 }
 .company-client-shell[data-theme="dark"] .company-client-edit-toggle:hover {
-  border-color: var(--brand-primary, #ff1b23);
+  border-color: #3b4555;
   color: #f5f6f8;
 }
 
@@ -1773,14 +1773,15 @@
   font-size: 13px;
   letter-spacing: 0;
   text-decoration: none;
-  transition: filter .15s, box-shadow .15s;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--brand-primary, #ff1b23) 32%, transparent);
+  transition: filter .15s, border-color .15s, background .15s;
+  box-shadow: none;
 }
 .company-client-shell a.company-client-backoffice-link:hover,
 .company-client-shell a.company-client-backoffice-link:focus {
   color: #ffffff !important;
-  filter: brightness(1.05);
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--brand-primary, #ff1b23) 45%, transparent);
+  filter: none;
+  border-color: var(--brand-primary, #ff1b23);
+  box-shadow: none;
 }
 .company-client-shell[data-theme="dark"] a.company-client-backoffice-link {
   background: var(--brand-primary, #ff1b23);
@@ -1826,7 +1827,25 @@
   font-size: 13px;
   cursor: pointer;
 }
-.company-client-am-toggle input { width: 16px; height: 16px; accent-color: var(--brand-primary, #ff1b23); }
+.company-client-am-toggle input,
+.tenant-users-toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--brand-primary, #ff1b23);
+  -webkit-appearance: checkbox;
+  appearance: checkbox;
+  border-radius: 4px;
+  outline: none;
+  box-shadow: none;
+}
+.company-client-am-toggle input:focus,
+.company-client-am-toggle input:focus-visible,
+.tenant-users-toggle input:focus,
+.tenant-users-toggle input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
 .company-client-shell[data-theme="dark"] .company-client-am-toggle { color: #c8cdd9; }
 
 /* T26 — Landing page editor (back-office) */
@@ -1932,7 +1951,7 @@
   background: #ffffff; color: #0f172a;
 }
 .tenant-users-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; cursor: pointer; color: #475569; }
-.tenant-users-toggle input { width: 16px; height: 16px; accent-color: var(--c-red, #ff1b23); }
+.tenant-users-toggle input { accent-color: var(--c-red, #ff1b23); }
 .tenant-users-loading,
 .tenant-users-empty { padding: 60px; text-align: center; color: #475569; }
 .tenant-users-foot { color: #475569; font-size: 13px; }
@@ -2880,7 +2899,7 @@
   border-color: rgba(148, 163, 184, .18);
   background: rgba(255, 255, 255, .82);
   color: var(--ds-text-primary);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, .05);
+  box-shadow: none;
 }
 
 .company-client-shell.is-edit .company-client-edit-status {
@@ -2895,6 +2914,7 @@
 .company-client-shell.is-edit .company-client-user-trigger:hover {
   background: #fff;
   border-color: rgba(100, 116, 139, .22);
+  box-shadow: none;
 }
 
 .company-client-shell.is-edit .company-client-welcome,

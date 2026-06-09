@@ -23,6 +23,7 @@ import * as researchDrafts     from './research/drafts.mjs';
 import * as searchQuery        from './search/query.mjs';
 import * as searchIndexer      from './search/indexer.mjs';
 import * as exportApi          from './integrations/export-api.mjs';
+import * as aiTasks            from './ai/tasks.mjs';
 
 function send(res, status, body, extraHeaders = {}) {
   const headers = {
@@ -700,6 +701,18 @@ export async function handleApiV2(req, res, url) {
   // Reader analytics / feedback (public — no auth required)
   if (p === '/api/v2/public/reader/events' && req.method === 'POST') return routePublicReaderEvent(req, res);
   if (p === '/api/v2/public/reader/feedback' && req.method === 'POST') return routePublicReaderFeedback(req, res);
+
+  // AI Assist (Phase 8B)
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/ai\/tasks$/);
+  if (m && req.method === 'GET') return routeAiTasksList(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/ai\/outline$/);
+  if (m && req.method === 'POST') return routeAiOutline(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/ai\/sections\/([A-Za-z0-9_-]+)\/rewrite$/);
+  if (m && req.method === 'POST') return routeAiRewrite(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/ai\/sections\/([A-Za-z0-9_-]+)\/translate$/);
+  if (m && req.method === 'POST') return routeAiTranslate(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/ai\/releases\/([A-Za-z0-9_-]+)\/release-notes$/);
+  if (m && req.method === 'POST') return routeAiReleaseNotes(req, res, m[1], m[2]);
 
   // Public export API (read-only, published content only)
   m = p.match(/^\/api\/v2\/public\/export\/products\/([A-Za-z0-9_-]+)$/);
@@ -1918,4 +1931,90 @@ function routeExportRelease(req, res, rid) {
   const data = exportApi.exportRelease(rid);
   if (!data) return send(res, 404, { error: 'Release not found or not published' });
   return send(res, 200, data, { 'cache-control': 'public, max-age=60' });
+}
+
+// ─── AI Assist (Phase 8B) ─────────────────────────────────────────────────────
+
+function routeAiTasksList(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const url2 = new URL(req.url, 'http://x');
+  const tasks = aiTasks.listTasks(cid, { taskType: url2.searchParams.get('taskType') || undefined });
+  return send(res, 200, { tasks });
+}
+
+async function routeAiOutline(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.productName || !body.topic) return send(res, 400, { error: 'productName and topic are required' });
+  try {
+    const result = await aiTasks.outlineDocument({
+      companyId: cid, productName: body.productName, topic: body.topic,
+      audience: body.audience ?? 'end users', createdBy: user.id,
+    });
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
+}
+
+async function routeAiRewrite(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'section.edit')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.body?.trim()) return send(res, 400, { error: 'body is required' });
+  try {
+    const result = await aiTasks.rewriteSection({
+      companyId: cid, sectionId: sid, body: body.body,
+      instruction: body.instruction ?? null, createdBy: user.id,
+    });
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
+}
+
+async function routeAiTranslate(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.edit')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.body?.trim()) return send(res, 400, { error: 'body is required' });
+  if (!body.fromLocale || !body.toLocale) return send(res, 400, { error: 'fromLocale and toLocale are required' });
+  try {
+    const result = await aiTasks.translateSection({
+      companyId: cid, sectionId: sid, body: body.body,
+      fromLocale: body.fromLocale, toLocale: body.toLocale, createdBy: user.id,
+    });
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
+}
+
+async function routeAiReleaseNotes(req, res, cid, rid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'release.edit')) return send(res, 403, { error: 'Forbidden' });
+  const release = db.prepare('SELECT * FROM releases WHERE id = ? AND company_id = ?').get(rid, cid);
+  if (!release) return send(res, 404, { error: 'Release not found' });
+  const changedSections = db.prepare(
+    "SELECT title, summary FROM sections WHERE document_id = ? AND status IN ('approved','published') ORDER BY position ASC LIMIT 20",
+  ).all(release.document_id);
+  try {
+    const result = await aiTasks.suggestReleaseNotes({
+      companyId: cid, releaseId: rid, version: release.version,
+      changedSections, createdBy: user.id,
+    });
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
 }

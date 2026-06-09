@@ -465,3 +465,22 @@ CREATE TABLE IF NOT EXISTS analytics_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_analytics_events_company ON analytics_events(company_id, event_name, created_at DESC);
+
+-- ── Phase 8B: AI Tasks ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS ai_tasks (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  task_type TEXT NOT NULL,
+  source_entity_type TEXT,
+  source_entity_id TEXT,
+  model TEXT NOT NULL,
+  prompt_excerpt TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  output_ref TEXT,
+  created_by TEXT REFERENCES users(id),
+  reviewed_by TEXT REFERENCES users(id),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_tasks_company ON ai_tasks(company_id, created_at DESC);

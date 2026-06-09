@@ -136,8 +136,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--ds-accent-second
 .btn-primary, .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--ds-space-2); min-height: 40px; border: 1px solid var(--ds-border-default); background: var(--ds-bg-surface); color: var(--ds-text-primary); border-radius: var(--ds-radius-md); padding: 8px 16px; font-family: var(--ds-font-display); font-size: var(--ds-text-md); font-weight: var(--ds-font-weight-heavy); line-height: 1; box-shadow: var(--ds-shadow-xs); white-space: nowrap; }
 .btn-primary { width: 100%; background: var(--ds-accent-primary); color: var(--ds-text-inverse); border-color: var(--ds-accent-primary); padding-block: 12px; margin-top: 8px; box-shadow: 0 12px 28px color-mix(in srgb, var(--ds-accent-primary) 22%, transparent); }
 .btn:hover:not(:disabled), .btn-primary:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--ds-border-strong); box-shadow: var(--ds-shadow-sm); }
-.btn-red { background: var(--ds-accent-primary); color: var(--ds-text-inverse); border-color: var(--ds-accent-primary); box-shadow: 0 10px 24px color-mix(in srgb, var(--ds-accent-primary) 18%, transparent); }
-.btn-red:hover:not(:disabled) { background: var(--ds-accent-primary-hover); border-color: var(--ds-accent-primary-hover); }
+.btn-red { background: var(--ds-accent-primary); color: var(--ds-text-inverse); border-color: var(--ds-accent-primary); box-shadow: none; }
+.btn-red:hover:not(:disabled) { background: var(--ds-accent-primary-hover); border-color: var(--ds-accent-primary-hover); box-shadow: none; }
 .btn-sm { min-height: 32px; padding: 6px 12px; font-size: var(--ds-text-sm); }
 .btn-ghost { background: var(--ds-bg-surface-soft); }
 .danger { color: var(--c-maroon); }

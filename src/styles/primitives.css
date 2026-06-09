@@ -842,6 +842,39 @@
 }
 .sc-blocking-label input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--ds-accent-primary); }
 
+/* ── Workflow Controls ───────────────────────────────────────────── */
+
+.wf-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) 0;
+}
+.wf-current-status { font-size: var(--ds-text-sm); }
+.wf-btn-row { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+
+/* ── Workflow History ─────────────────────────────────────────────── */
+
+.wf-history { margin-top: var(--ds-space-2); }
+.wf-history-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--ds-font-body);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-font-weight-medium);
+  color: var(--ds-text-muted);
+  padding: var(--ds-space-1) 0;
+  transition: color var(--ds-transition-fast);
+}
+.wf-history-toggle:hover { color: var(--ds-text-primary); }
+.wf-timeline { padding-top: var(--ds-space-3); }
+.wf-history-empty { font-size: var(--ds-text-sm); color: var(--ds-text-muted); margin: 0; }
+.wf-actor { font-weight: var(--ds-font-weight-semibold); color: var(--ds-text-primary); font-size: var(--ds-text-sm); }
+.wf-time { font-size: 11px; color: var(--ds-text-muted); margin-left: var(--ds-space-2); }
+.wf-note { font-size: var(--ds-text-sm); color: var(--ds-text-secondary); margin: var(--ds-space-1) 0 0; font-style: italic; }
+
 /* ── Responsive: table stack at 768px ───────────────────────────── */
 
 @media (max-width: 768px) {

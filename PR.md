@@ -213,10 +213,6 @@ Drops the glow `box-shadow` from `.ds-btn-primary`.
 
 ---
 
-## Linked issues
-
-Closes #
-
 ---
 
 ## Test plan

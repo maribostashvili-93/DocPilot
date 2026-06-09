@@ -1,4 +1,4 @@
-# DocPilot — Full Implementation Plan
+﻿# DocPilot - Full Implementation Plan
 
 > Last updated: 2026-06-09  
 > This file is the single source of truth for all implementation detail. All other documents are secondary.
@@ -8,30 +8,35 @@
 ## Work Order (Summary)
 
 ```
-✅ Phase 1    — Planning (complete)
-✅ Phase 2A   — Schema Completion (complete)
+[x] Phase 1    - Planning (complete)
+[x] Phase 2A   - Schema Completion (complete)
 
-🔲 Phase 2B   — Storage Adapter Layer          ← start here
-🔲 Phase 2C   — Permission System Refactor      ← parallel with 2B
-🔲 Phase 2D   — API v2 Content Expansion        ← after 2B + 2C
-🔲 Phase 2E   — Workflow Engine                 ← alongside 2D
+[ ] Phase 2B   - Storage Adapter Layer          <- start here
+[ ] Phase 2C   - Permission System Refactor     <- parallel with 2B
+[ ] Phase 2D   - API v2 Content Expansion       <- after 2B + 2C
+[ ] Phase 2E   - Workflow Engine                <- alongside 2D
 
-🔲 Phase 3A   — Component Extraction (primitives)
-🔲 Phase 3B   — Token Completion Pass
-🔲 Phase 3C   — Responsive Audit
-🔲 Phase 3D   — ResearchApp Design System
+[ ] Phase 3A   - Component Extraction (primitives)
+[ ] Phase 3B   - Token Completion Pass
+[ ] Phase 3C   - Responsive Audit
+[ ] Phase 3D   - ResearchApp Design System
 
-🔲 Phase 4A   — Comments System
-🔲 Phase 4B   — Workflow Transition UI
-🔲 Phase 4C   — Translation Locale Management
-🔲 Phase 4D   — Product Members
-🔲 Phase 4E   — Release Full Lifecycle UI
+[ ] Phase 4A   - Comments System
+[ ] Phase 4B   - Workflow Transition UI
+[ ] Phase 4C   - Translation Locale Management
+[ ] Phase 4D   - Product Members
+[ ] Phase 4E   - Release Full Lifecycle UI
 
-🔲 Phase 5A   — Research Backend
-🔲 Phase 5B   — CMS Bridge
+[ ] Phase 5A   - Research Backend
+[ ] Phase 5B   - CMS Bridge
 
-🔲 Phase 6A   — Reader Modernization
-🔲 Phase 6B   — API Keys + Webhooks
+[ ] Phase 6A   - Reader Modernization
+[ ] Phase 6B   - API Keys + Webhooks
+[ ] Phase 7A   - Search Index + Discovery
+[ ] Phase 7B   - Localization Operations
+[ ] Phase 7C   - Reader Feedback + Analytics
+[ ] Phase 8A   - Integrations Platform
+[ ] Phase 8B   - AI Assist With Human Review
 ```
 
 ---
@@ -42,12 +47,12 @@
 
 | Layer | Status |
 |-------|--------|
-| SQLite schema | 23 tables — Phase 2A complete |
+| SQLite schema | 23 tables вЂ” Phase 2A complete |
 | Auth | bcrypt, sessions, rate limiting, secure cookies (`server/auth.mjs`) |
 | Multi-tenant shell | companies, branding, company-admin, client area |
 | Legacy CMS | products/documents/sections/translations/releases via JSON `kv_store` |
-| API v2 | auth + tenant + users — content APIs still on legacy server |
-| Design token system | `tokens.css`, `primitives.css`, `surfaces.css` — complete |
+| API v2 | auth + tenant + users вЂ” content APIs still on legacy server |
+| Design token system | `tokens.css`, `primitives.css`, `surfaces.css` вЂ” complete |
 | Company Admin UI | B+ quality, design tokens 85% |
 | Client Area | B quality, design tokens 75% |
 | ResearchApp | mock data only, not connected to backend |
@@ -57,7 +62,7 @@
 | Gap | Impact |
 |-----|--------|
 | No storage adapter layer | two parallel persistence systems (kv_store + SQLite) |
-| No `can(user, action, resource)` | flat role map — no granular permissions |
+| No `can(user, action, resource)` | flat role map вЂ” no granular permissions |
 | API v2 has no content routes | products/docs/sections/releases still on legacy server |
 | No workflow engine on server | transitions are client-side or unvalidated |
 | No comments system | section review flow incomplete |
@@ -70,7 +75,7 @@
 
 ---
 
-# ✅ Phase 1 — Planning (Complete)
+# вњ… Phase 1 вЂ” Planning (Complete)
 
 **Produced:**
 
@@ -86,7 +91,7 @@
 
 ---
 
-# ✅ Phase 2A — Schema Completion (Complete)
+# вњ… Phase 2A вЂ” Schema Completion (Complete)
 
 **Files changed:** `server/schema.sql`, `server/db.mjs`
 
@@ -94,9 +99,9 @@
 
 | Table | Purpose |
 |-------|---------|
-| `permission_grants` | Scoped `can(user, action, scope_id)` — replaces flat role map |
-| `translation_locales` | Per document × locale status + completion % tracking |
-| `translation_strings` | Per section × locale body — dirty/saved/review state |
+| `permission_grants` | Scoped `can(user, action, scope_id)` вЂ” replaces flat role map |
+| `translation_locales` | Per document Г— locale status + completion % tracking |
+| `translation_strings` | Per section Г— locale body вЂ” dirty/saved/review state |
 | `release_snapshots` | Immutable content snapshot written at publish time |
 | `release_items` | Documents + sections bundled inside a release with readiness score |
 | `product_members` | Per-product role delegation without tenant-wide power |
@@ -124,11 +129,11 @@
 
 ---
 
-# 🔲 Phase 2B — Storage Adapter Layer
+# рџ”І Phase 2B вЂ” Storage Adapter Layer
 
 **Goal:** Bridge the two parallel persistence systems (legacy JSON kv_store + SQLite v2) without breaking existing reads. Dual-write until Phase 2D flips the primary.
 
-**Depends on:** Phase 2A ✅  
+**Depends on:** Phase 2A вњ…  
 **Independent of:** Phase 2C
 
 ---
@@ -234,7 +239,7 @@ export function save(entity, actorId) {
     updated_at: now,
   });
 
-  // kv_store dual-write (Phase 2B → 2D)
+  // kv_store dual-write (Phase 2B в†’ 2D)
   const kv = readKv(entity.company_id);
   kv[entity.id] = { ...entity, updated_at: now };
   writeKv(entity.company_id, kv);
@@ -609,10 +614,10 @@ export function snapshot(releaseId, payload, actorId) {
 ## Dual-Write Strategy
 
 ```
-Phase 2B  save() ──► SQLite  (primary)
-                ──► kv_store (fallback, backwards-compat)
+Phase 2B  save() в”Ђв”Ђв–є SQLite  (primary)
+                в”Ђв”Ђв–є kv_store (fallback, backwards-compat)
 
-Phase 2D  save() ──► SQLite  (primary, only)
+Phase 2D  save() в”Ђв”Ђв–є SQLite  (primary, only)
           kv_store write dropped
 
 Phase 5   kv_store removed entirely
@@ -622,23 +627,23 @@ Phase 5   kv_store removed entirely
 
 ---
 
-# 🔲 Phase 2C — Permission System Refactor
+# рџ”І Phase 2C вЂ” Permission System Refactor
 
 **Goal:** Replace flat `WRITE_PERMISSIONS[role]` with `can(user, action, resource, scope)`.  
 **File to create:** `server/authz.mjs`  
 **Files to change:** `server/api-v2.mjs`, `server/docpilot-server.mjs`, `src/storage.ts`  
-**Depends on:** Phase 2A (`permission_grants` table) ✅  
+**Depends on:** Phase 2A (`permission_grants` table) вњ…  
 **Independent of:** Phase 2B
 
 ---
 
-## `server/authz.mjs` — Complete File
+## `server/authz.mjs` вЂ” Complete File
 
 ```js
 import { db } from './db.mjs';
 import { nowIso } from './db.mjs';
 
-// ─── Role default baselines ───────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ Role default baselines в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 // '*' = all actions. 'product.*' = all product.* actions.
 const ROLE_DEFAULTS = {
   superadmin: ['*'],
@@ -694,7 +699,7 @@ const ROLE_DEFAULTS = {
   ],
 };
 
-// ─── Full action catalog ──────────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ Full action catalog в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 // Documented here for reference. Enforced via ROLE_DEFAULTS + permission_grants.
 export const ALL_ACTIONS = [
   'product.view',    'product.create',  'product.edit',
@@ -725,15 +730,15 @@ export const ALL_ACTIONS = [
   'webhook.manage',  'api-key.manage',
 ];
 
-// ─── can() ────────────────────────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ can() в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 /**
  * Check if user (with given roles array) can perform action.
  *
- * @param {object} user        — users row from DB
- * @param {string[]} roles     — user's roles (from user_roles table)
- * @param {string} action      — e.g. 'document.edit'
- * @param {string} scopeType   — 'tenant' | 'product' | 'document'
- * @param {string|null} scopeId — product_id or document_id (null = tenant-wide)
+ * @param {object} user        вЂ” users row from DB
+ * @param {string[]} roles     вЂ” user's roles (from user_roles table)
+ * @param {string} action      вЂ” e.g. 'document.edit'
+ * @param {string} scopeType   вЂ” 'tenant' | 'product' | 'document'
+ * @param {string|null} scopeId вЂ” product_id or document_id (null = tenant-wide)
  */
 export function can(user, roles, action, scopeType = 'tenant', scopeId = null) {
   if (!user || !action) return false;
@@ -773,7 +778,7 @@ export function can(user, roles, action, scopeType = 'tenant', scopeId = null) {
   return !!row;
 }
 
-// ─── Middleware factory ───────────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ Middleware factory в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 /**
  * Returns a node-style middleware that checks can() and sends 403 if denied.
  * Usage:  router.put('/path', requireCan('document.edit'), handler)
@@ -809,7 +814,7 @@ if (!WRITE_PERMISSIONS[role]?.has('documents:write'))
 ### After:
 ```js
 import { can } from './authz.mjs';
-// req.auth = { user, roles } — set by loadAuthFromRequest() from auth.mjs
+// req.auth = { user, roles } вЂ” set by loadAuthFromRequest() from auth.mjs
 const { user, roles } = req.auth;
 if (!can(user, roles, 'document.edit'))
   return send(res, 403, { error: 'Forbidden' });
@@ -821,11 +826,11 @@ if (!can(user, roles, 'document.edit'))
 
 ```ts
 // canRoleWrite() stays as a UI hint only (button enable/disable)
-// Server is the authority — storage.ts checks are defensive hints only
+// Server is the authority вЂ” storage.ts checks are defensive hints only
 // After Phase 2D, trust server responses instead
 
 export function canRoleWrite(role: UserRole, permission: WritePermission): boolean {
-  // This is a UI hint only — server is the source of truth.
+  // This is a UI hint only вЂ” server is the source of truth.
   return WRITE_PERMISSIONS[role]?.includes(permission) ?? false;
 }
 ```
@@ -834,11 +839,11 @@ export function canRoleWrite(role: UserRole, permission: WritePermission): boole
 
 ---
 
-# 🔲 Phase 2D — API v2 Content Expansion
+# рџ”І Phase 2D вЂ” API v2 Content Expansion
 
 **Goal:** Move all content CRUD from the legacy server to `/api/v2/`.  
 **File to change:** `server/api-v2.mjs`  
-**Depends on:** Phase 2B ✅ + Phase 2C ✅
+**Depends on:** Phase 2B вњ… + Phase 2C вњ…
 
 ---
 
@@ -851,7 +856,7 @@ POST   /api/v2/companies/:cid/products
 GET    /api/v2/companies/:cid/products/:pid
 PUT    /api/v2/companies/:cid/products/:pid
 DELETE /api/v2/companies/:cid/products/:pid
-PUT    /api/v2/companies/:cid/products/:pid/status        — workflow transition
+PUT    /api/v2/companies/:cid/products/:pid/status        вЂ” workflow transition
 ```
 
 ### Documents
@@ -861,8 +866,8 @@ POST   /api/v2/companies/:cid/products/:pid/documents
 GET    /api/v2/companies/:cid/documents/:did
 PUT    /api/v2/companies/:cid/documents/:did
 DELETE /api/v2/companies/:cid/documents/:did
-POST   /api/v2/companies/:cid/documents/:did/transition   — status change via workflow engine
-GET    /api/v2/companies/:cid/documents/:did/transitions  — history
+POST   /api/v2/companies/:cid/documents/:did/transition   вЂ” status change via workflow engine
+GET    /api/v2/companies/:cid/documents/:did/transitions  вЂ” history
 ```
 
 ### Sections
@@ -892,14 +897,14 @@ GET    /api/v2/companies/:cid/products/:pid/releases
 POST   /api/v2/companies/:cid/products/:pid/releases
 GET    /api/v2/companies/:cid/releases/:rid
 PUT    /api/v2/companies/:cid/releases/:rid
-POST   /api/v2/companies/:cid/releases/:rid/transition    — draft→review→approved→staged→published
+POST   /api/v2/companies/:cid/releases/:rid/transition    вЂ” draftв†’reviewв†’approvedв†’stagedв†’published
 POST   /api/v2/companies/:cid/releases/:rid/rollback
-GET    /api/v2/companies/:cid/releases/:rid/readiness     — readiness score + blocking list
+GET    /api/v2/companies/:cid/releases/:rid/readiness     вЂ” readiness score + blocking list
 ```
 
 ### Media
 ```
-POST   /api/v2/companies/:cid/media             — multipart upload
+POST   /api/v2/companies/:cid/media             вЂ” multipart upload
 GET    /api/v2/companies/:cid/media
 GET    /api/v2/companies/:cid/media/:mid
 PUT    /api/v2/companies/:cid/media/:mid
@@ -952,7 +957,7 @@ case matchPath('POST', '/api/v2/companies/:cid/products'): {
 
 ---
 
-## Readiness Endpoint — `GET /releases/:rid/readiness`
+## Readiness Endpoint вЂ” `GET /releases/:rid/readiness`
 
 ```js
 {
@@ -995,21 +1000,21 @@ case matchPath('POST', '/api/v2/companies/:cid/products'): {
 
 ---
 
-# 🔲 Phase 2E — Workflow Engine
+# рџ”І Phase 2E вЂ” Workflow Engine
 
 **Goal:** Enforce transition rules and blocking conditions server-side before any status change.  
 **File to create:** `server/workflow.mjs`  
-**Depends on:** Phase 2A ✅ (`workflow_transitions`, `comments` tables)
+**Depends on:** Phase 2A вњ… (`workflow_transitions`, `comments` tables)
 
 ---
 
-## `server/workflow.mjs` — Complete File
+## `server/workflow.mjs` вЂ” Complete File
 
 ```js
 import { db } from './db.mjs';
 import { makeId, nowIso } from './db.mjs';
 
-// ─── Allowed transitions ──────────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ Allowed transitions в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 const TRANSITIONS = {
   product: {
     draft:     ['review'],
@@ -1044,18 +1049,18 @@ const TRANSITIONS = {
   },
 };
 
-// ─── validateTransition ───────────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ validateTransition в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 export function validateTransition(entityType, from, to) {
   const allowed = TRANSITIONS[entityType]?.[from] ?? [];
   if (!allowed.includes(to)) {
     throw Object.assign(
-      new Error(`Invalid transition: ${entityType} ${from} → ${to}. Allowed: ${allowed.join(', ') || 'none'}`),
+      new Error(`Invalid transition: ${entityType} ${from} в†’ ${to}. Allowed: ${allowed.join(', ') || 'none'}`),
       { code: 'INVALID_TRANSITION', statusCode: 422 }
     );
   }
 }
 
-// ─── checkBlockingRules ───────────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ checkBlockingRules в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 // Returns string[] of blocking issue messages. Empty array = no blocks.
 export function checkBlockingRules(entityType, entityId) {
   const issues = [];
@@ -1064,7 +1069,7 @@ export function checkBlockingRules(entityType, entityId) {
     const s = db.prepare('SELECT * FROM sections WHERE id = ?').get(entityId);
     if (!s) return ['Section not found'];
     if (!s.title?.trim())  issues.push('Section title is empty');
-    if (s.has_unsafe_html) issues.push('Section contains unsafe HTML — review and clear flag before approving');
+    if (s.has_unsafe_html) issues.push('Section contains unsafe HTML вЂ” review and clear flag before approving');
     if (!s.reviewer)       issues.push('Section has no assigned reviewer');
 
     const blocking = db.prepare(
@@ -1083,7 +1088,7 @@ export function checkBlockingRules(entityType, entityId) {
       "SELECT COUNT(*) as n FROM sections WHERE document_id = ? AND status IN ('draft', 'review')"
     ).get(entityId);
     if (draftSections.n > 0)
-      issues.push(`${draftSections.n} section(s) still in draft or review — all must be approved first`);
+      issues.push(`${draftSections.n} section(s) still in draft or review вЂ” all must be approved first`);
   }
 
   if (entityType === 'release') {
@@ -1103,7 +1108,7 @@ export function checkBlockingRules(entityType, entityId) {
   return issues;
 }
 
-// ─── recordTransition ─────────────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ recordTransition в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 export function recordTransition(entityType, entityId, from, to, actorId, note = null) {
   const tableMap = {
     product:  'products',
@@ -1121,8 +1126,8 @@ export function recordTransition(entityType, entityId, from, to, actorId, note =
   `).run(makeId('wt'), entity.company_id, entityType, entityId, from, to, actorId, note, nowIso());
 }
 
-// ─── applyTransition ──────────────────────────────────────────────────────────
-// Full pipeline: validate → check blocking (if moving forward) → update status → record
+// в”Ђв”Ђв”Ђ applyTransition в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// Full pipeline: validate в†’ check blocking (if moving forward) в†’ update status в†’ record
 export function applyTransition(entityType, entityId, to, actorId, note = null) {
   const tableMap = {
     product:  'products',
@@ -1190,7 +1195,7 @@ case matchPath('POST', '/api/v2/companies/:cid/sections/:sid/transition'): {
 
 ---
 
-# 🔲 Phase 3A — Component Extraction
+# рџ”І Phase 3A вЂ” Component Extraction
 
 **Goal:** Extract duplicated shell-local components into `src/styles/primitives.css` as single-source `.ds-*` classes.  
 **File to change:** `src/styles/primitives.css`  
@@ -1313,23 +1318,23 @@ case matchPath('POST', '/api/v2/companies/:cid/sections/:sid/transition'): {
 
 ## Cleanup Checklist
 
-1. `multitenant.css` — delete `.cms-nav-pill` → replace usages with `.ds-topbar-pill`
-2. `company-admin.css` — delete `.ca-topbar-tab`
-3. `company-cms.css` — delete `.client-topbar-item`
-4. All shells — delete local empty-state blocks
-5. All shells — delete local dialog/modal CSS → use `.ds-dialog`
+1. `multitenant.css` вЂ” delete `.cms-nav-pill` в†’ replace usages with `.ds-topbar-pill`
+2. `company-admin.css` вЂ” delete `.ca-topbar-tab`
+3. `company-cms.css` вЂ” delete `.client-topbar-item`
+4. All shells вЂ” delete local empty-state blocks
+5. All shells вЂ” delete local dialog/modal CSS в†’ use `.ds-dialog`
 
 ---
 
 ---
 
-# 🔲 Phase 3B — Token Completion Pass
+# рџ”І Phase 3B вЂ” Token Completion Pass
 
 **Goal:** Replace all hardcoded hex/font/radius/shadow values with `var(--ds-*)` tokens.  
 **Target files (in priority order):**
-1. `src/multitenant/multitenant.css` — most violations
-2. `src/styles.css` — ~60–80 replacements
-3. `src/multitenant/research.css` — full rework, currently 5% compliance
+1. `src/multitenant/multitenant.css` вЂ” most violations
+2. `src/styles.css` вЂ” ~60вЂ“80 replacements
+3. `src/multitenant/research.css` вЂ” full rework, currently 5% compliance
 
 ---
 
@@ -1391,7 +1396,7 @@ rg -n "transition:" src/multitenant/multitenant.css
 |-------|---------------------|--------|-----------|-------------|
 | Company Admin | 85% | 95%+ | B+ | A |
 | Client Area | 75% | 90%+ | B | B+ |
-| SuperAdmin | 70% | 90%+ | B– | B+ |
+| SuperAdmin | 70% | 90%+ | BвЂ“ | B+ |
 | CMS Shell | 70% | 90%+ | C+ | B+ |
 | Content Editor | 60% | 85%+ | C | B |
 | Research App | 5% | 90%+ | F | B |
@@ -1400,7 +1405,7 @@ rg -n "transition:" src/multitenant/multitenant.css
 
 ---
 
-# 🔲 Phase 3C — Responsive Audit
+# рџ”І Phase 3C вЂ” Responsive Audit
 
 **Five breakpoints:** 1440 / 1280 / 1024 / 768 / 480px
 
@@ -1410,18 +1415,18 @@ rg -n "transition:" src/multitenant/multitenant.css
 
 | Shell | 1440 | 1280 | 1024 | 768 | 480 | Known Issues |
 |-------|:----:|:----:|:----:|:---:|:---:|-------------|
-| Company Admin | ✅ | ✅ | ✅ | ⚠️ | ❌ | Users table clips, actions overlap |
-| CMS Shell | ✅ | ✅ | ⚠️ | ❌ | ❌ | No topbar collapse, sidebar overflow |
-| Content Editor | ✅ | ✅ | ⚠️ | ❌ | ❌ | 2-col layout needs 1024px collapse |
-| Client Area | ✅ | ✅ | ✅ | ⚠️ | ❌ | Doc grid stacks but spacing breaks |
-| Research App | ✅ | ⚠️ | ❌ | ❌ | ❌ | Zero responsive rules |
-| SuperAdmin | ✅ | ✅ | ✅ | ✅ | ⚠️ | Company list wraps awkwardly |
+| Company Admin | вњ… | вњ… | вњ… | вљ пёЏ | вќЊ | Users table clips, actions overlap |
+| CMS Shell | вњ… | вњ… | вљ пёЏ | вќЊ | вќЊ | No topbar collapse, sidebar overflow |
+| Content Editor | вњ… | вњ… | вљ пёЏ | вќЊ | вќЊ | 2-col layout needs 1024px collapse |
+| Client Area | вњ… | вњ… | вњ… | вљ пёЏ | вќЊ | Doc grid stacks but spacing breaks |
+| Research App | вњ… | вљ пёЏ | вќЊ | вќЊ | вќЊ | Zero responsive rules |
+| SuperAdmin | вњ… | вњ… | вњ… | вњ… | вљ пёЏ | Company list wraps awkwardly |
 
 ---
 
 ## Priority Fixes
 
-### 1. Content Editor — single column at 1024px
+### 1. Content Editor вЂ” single column at 1024px
 
 ```css
 @media (max-width: 1024px) {
@@ -1430,7 +1435,7 @@ rg -n "transition:" src/multitenant/multitenant.css
 }
 ```
 
-### 2. Company Admin users table — card stack at 768px
+### 2. Company Admin users table вЂ” card stack at 768px
 
 ```css
 @media (max-width: 768px) {
@@ -1440,7 +1445,7 @@ rg -n "transition:" src/multitenant/multitenant.css
 }
 ```
 
-### 3. CMS Shell topbar — collapse at 768px
+### 3. CMS Shell topbar вЂ” collapse at 768px
 
 ```css
 @media (max-width: 768px) {
@@ -1449,7 +1454,7 @@ rg -n "transition:" src/multitenant/multitenant.css
 }
 ```
 
-### 4. Research App sidebar — bottom nav at 1024px
+### 4. Research App sidebar вЂ” bottom nav at 1024px
 
 ```css
 @media (max-width: 1024px) {
@@ -1462,7 +1467,7 @@ rg -n "transition:" src/multitenant/multitenant.css
 
 ## Enforcement Rules
 
-- Never: `height: 100vh` — use `calc(100vh - var(--ds-topbar-height))`
+- Never: `height: 100vh` вЂ” use `calc(100vh - var(--ds-topbar-height))`
 - Never: `overflow: hidden` + inner scroll container without documentation
 - Never: horizontal overflow at any breakpoint
 - Never: `@media` at breakpoints other than 1440, 1280, 1024, 768, 480
@@ -1473,7 +1478,7 @@ rg -n "transition:" src/multitenant/multitenant.css
 
 ---
 
-# 🔲 Phase 3D — ResearchApp Design System Integration
+# рџ”І Phase 3D вЂ” ResearchApp Design System Integration
 
 **Files to change:** `src/multitenant/research.css`, `src/multitenant/ResearchApp.tsx`
 
@@ -1497,10 +1502,10 @@ rg -n "transition:" src/multitenant/multitenant.css
 
 ---
 
-## `research.css` After Cleanup — Layout Only
+## `research.css` After Cleanup вЂ” Layout Only
 
 ```css
-/* research.css — layout skeleton only, all visual styling via ds-* */
+/* research.css вЂ” layout skeleton only, all visual styling via ds-* */
 .research-shell {
   display: grid;
   grid-template-columns: var(--ds-sidebar-width) 1fr;
@@ -1534,13 +1539,13 @@ rg -n "transition:" src/multitenant/multitenant.css
 
 ---
 
-# 🔲 Phase 4A — Comments System
+# рџ”І Phase 4A вЂ” Comments System
 
 **Depends on:** Phase 2D (section routes) + Phase 2E (workflow blocking rules)
 
 ---
 
-## Backend — Routes in `api-v2.mjs`
+## Backend вЂ” Routes in `api-v2.mjs`
 
 ```js
 // GET /api/v2/companies/:cid/sections/:sid/comments
@@ -1575,7 +1580,7 @@ return send(res, 200, { ok: true });
 
 ---
 
-## Frontend — Comment Thread Panel
+## Frontend вЂ” Comment Thread Panel
 
 ```tsx
 function SectionCommentPanel({ sectionId }: { sectionId: string }) {
@@ -1629,7 +1634,7 @@ function SectionCommentPanel({ sectionId }: { sectionId: string }) {
 
 ---
 
-# 🔲 Phase 4B — Workflow Transition UI
+# рџ”І Phase 4B вЂ” Workflow Transition UI
 
 **Depends on:** Phase 2D + Phase 2E
 
@@ -1685,7 +1690,7 @@ function WorkflowControls({ entity, entityType, onTransitionSuccess }) {
             {issues.length > 0 && (
               <div className="ds-dialog-body">
                 <p>Blocking issues:</p>
-                <ul>{issues.map((i, idx) => <li key={idx}>⚠️ {i}</li>)}</ul>
+                <ul>{issues.map((i, idx) => <li key={idx}>вљ пёЏ {i}</li>)}</ul>
               </div>
             )}
             <div className="ds-dialog-footer">
@@ -1729,13 +1734,13 @@ function WorkflowHistory({ entityType, entityId }) {
 
 ---
 
-# 🔲 Phase 4C — Translation Locale Management
+# рџ”І Phase 4C вЂ” Translation Locale Management
 
 **Depends on:** Phase 2D (translation routes)
 
 ---
 
-## Frontend — Translation Tab (CMS)
+## Frontend вЂ” Translation Tab (CMS)
 
 ```tsx
 function TranslationLocaleManager({ documentId }) {
@@ -1761,7 +1766,7 @@ function TranslationLocaleManager({ documentId }) {
 
       {locales.some(l => l.completion_pct < 90) && (
         <div className="translation-warning">
-          ⚠️ Some locales are below the 90% release threshold
+          вљ пёЏ Some locales are below the 90% release threshold
         </div>
       )}
     </div>
@@ -1775,17 +1780,17 @@ function TranslationLocaleManager({ documentId }) {
 
 ```
 GET /releases/:rid/readiness
-  → translationThreshold.ok = false if any locale < 90%
+  в†’ translationThreshold.ok = false if any locale < 90%
 
 UI warning banner:
-  "⚠️ Release Blocked: Georgian 72% (minimum 90% required)"
+  "вљ пёЏ Release Blocked: Georgian 72% (minimum 90% required)"
 ```
 
 ---
 
 ---
 
-# 🔲 Phase 4D — Product Members
+# рџ”І Phase 4D вЂ” Product Members
 
 **Depends on:** Phase 2D + Phase 2C
 
@@ -1800,7 +1805,7 @@ DELETE /api/v2/companies/:cid/products/:pid/members/:uid  requires: product.mana
 ```
 
 ```js
-// POST — add or update member role
+// POST вЂ” add or update member role
 const { userId, role } = await readBody(req);
 db.prepare(`
   INSERT INTO product_members(id, product_id, user_id, role, granted_by, granted_at)
@@ -1812,7 +1817,7 @@ return send(res, 201, { ok: true });
 
 ---
 
-## Frontend — Team Tab
+## Frontend вЂ” Team Tab
 
 ```tsx
 function ProductMembersPanel({ productId }) {
@@ -1851,7 +1856,7 @@ function ProductMembersPanel({ productId }) {
 
 ---
 
-# 🔲 Phase 4E — Release Full Lifecycle UI
+# рџ”І Phase 4E вЂ” Release Full Lifecycle UI
 
 **Depends on:** Phase 2D + Phase 2E
 
@@ -1860,8 +1865,8 @@ function ProductMembersPanel({ productId }) {
 ## Release Status Stepper
 
 ```
-draft ──► review ──► approved ──► staged ──► published
-                                                  ↓
+draft в”Ђв”Ђв–є review в”Ђв”Ђв–є approved в”Ђв”Ђв–є staged в”Ђв”Ђв–є published
+                                                  в†“
                                             rolled-back
 ```
 
@@ -1909,7 +1914,7 @@ function ReleaseReadinessPanel({ releaseId }) {
         const item = readiness?.[key];
         return (
           <div key={key} className={`readiness-item ${item?.ok ? 'ok' : 'blocked'}`}>
-            <span>{item?.ok ? '✅' : '⚠️'}</span>
+            <span>{item?.ok ? 'вњ…' : 'вљ пёЏ'}</span>
             <span>{label(item ?? {})}</span>
           </div>
         );
@@ -1940,7 +1945,7 @@ function RollbackButton({ releaseId, onRollback }) {
             <div className="ds-dialog-header"><span className="ds-dialog-title">Confirm Rollback</span></div>
             <div className="ds-dialog-body">
               <p>This will mark the release as <strong>rolled-back</strong> and record a transition event.</p>
-              <p>The snapshot is NOT deleted — all history is preserved.</p>
+              <p>The snapshot is NOT deleted вЂ” all history is preserved.</p>
             </div>
             <div className="ds-dialog-footer">
               <button className="ds-btn ds-btn-ghost ds-btn-sm" onClick={() => setConfirming(false)}>Cancel</button>
@@ -1958,7 +1963,7 @@ function RollbackButton({ releaseId, onRollback }) {
 
 ---
 
-# 🔲 Phase 5A — Research Backend
+# рџ”І Phase 5A вЂ” Research Backend
 
 **Files to create:**
 ```
@@ -2012,7 +2017,7 @@ export async function triggerAnalysis(cid, sourceId) {
   jobs.push(job);
   writeJobs(cid, jobs);
 
-  // Fire async — do not await
+  // Fire async вЂ” do not await
   runAnalysis(cid, job.id, source).catch(err => updateJob(cid, job.id, { status: 'failed', error: err.message }));
 
   return job;
@@ -2088,13 +2093,13 @@ export async function sendToCms(cid, draftId, productId, actorId) {
 
 ---
 
-# 🔲 Phase 5B — CMS Bridge
+# рџ”І Phase 5B вЂ” CMS Bridge
 
 **Depends on:** Phase 5A + Phase 2D
 
 ---
 
-## Frontend — ResearchApp Draft Review
+## Frontend вЂ” ResearchApp Draft Review
 
 ```tsx
 function DraftReviewPage({ draftId }) {
@@ -2107,7 +2112,7 @@ function DraftReviewPage({ draftId }) {
       <div className="ds-page-header">
         <div>
           <p className="ds-page-header-title">{draft?.title}</p>
-          <p className="ds-page-header-sub">Research Draft — Pending Review</p>
+          <p className="ds-page-header-sub">Research Draft вЂ” Pending Review</p>
         </div>
         <div className="ds-page-header-actions">
           <button className="ds-btn ds-btn-ghost ds-btn-sm" onClick={discard}>Discard</button>
@@ -2120,12 +2125,12 @@ function DraftReviewPage({ draftId }) {
 }
 ```
 
-## CMS — Research Source Badge
+## CMS вЂ” Research Source Badge
 
 ```tsx
 {document.metadata?.researchSourceId && (
   <a href={`/c/${slug}/admin/research/sources/${document.metadata.researchSourceId}`} className="ds-badge research-source-badge">
-    🔬 From Research
+    рџ”¬ From Research
   </a>
 )}
 ```
@@ -2134,7 +2139,7 @@ function DraftReviewPage({ draftId }) {
 
 ---
 
-# 🔲 Phase 6A — Reader Modernization
+# рџ”І Phase 6A вЂ” Reader Modernization
 
 **Files to change:** `src/reader/DocReader.tsx`, `src/reader/reader.css`, `src/reader/theme.ts`
 
@@ -2143,7 +2148,7 @@ function DraftReviewPage({ draftId }) {
 ## Token Migration
 
 ```css
-/* reader.css — dark mode token overrides */
+/* reader.css вЂ” dark mode token overrides */
 .reader-shell[data-theme="dark"] {
   color-scheme: dark;
   --ds-bg-canvas:      var(--ds-slate-950);
@@ -2202,7 +2207,7 @@ function ReaderControls({ availableLocales, availableVersions, currentLocale, cu
 
 ---
 
-# 🔲 Phase 6B — API Keys + Webhooks
+# рџ”І Phase 6B вЂ” API Keys + Webhooks
 
 ---
 
@@ -2302,11 +2307,514 @@ export async function deliverWebhooks(companyId, event, payload) {
 
 ---
 
+# рџ”І Phase 7A вЂ” Search Index + Discovery
+
+**Depends on:** Phase 2D + Phase 6A  
+**Goal:** Make public docs searchable across product, document, section, locale, and release snapshot without introducing an external search platform too early.
+
+---
+
+## Schema Additions (`server/schema.sql`)
+
+```sql
+CREATE TABLE IF NOT EXISTS search_documents (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  product_id TEXT REFERENCES products(id) ON DELETE CASCADE,
+  document_id TEXT REFERENCES documents(id) ON DELETE CASCADE,
+  section_id TEXT REFERENCES sections(id) ON DELETE CASCADE,
+  release_snapshot_id TEXT REFERENCES release_snapshots(id) ON DELETE CASCADE,
+  locale TEXT NOT NULL DEFAULT 'en',
+  title TEXT NOT NULL,
+  body_plain TEXT NOT NULL,
+  summary TEXT,
+  keywords TEXT NOT NULL DEFAULT '[]',
+  status TEXT NOT NULL DEFAULT 'active',
+  rank_score REAL NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_search_documents_company_locale
+  ON search_documents(company_id, locale, status);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS search_documents_fts USING fts5(
+  search_document_id UNINDEXED,
+  title,
+  body_plain,
+  summary,
+  keywords
+);
+```
+
+---
+
+## Files to Create
+
+```
+server/search/indexer.mjs
+server/search/query.mjs
+server/search/extract.mjs
+```
+
+---
+
+## Indexer Responsibilities
+
+- Build index only from approved/published content
+- Index base locale content from `sections`
+- Index translated content from `translation_strings`
+- Rebuild per document, not whole tenant, on publish/update
+- Keep `search_documents` and FTS table in sync
+
+```js
+// server/search/indexer.mjs
+export function reindexDocument({ companyId, documentId, releaseSnapshotId = null }) {
+  const doc = db.prepare(`SELECT * FROM documents WHERE id = ? AND company_id = ?`).get(documentId, companyId);
+  if (!doc) throw new Error('Document not found');
+
+  const sections = db.prepare(`
+    SELECT s.*, d.product_id, d.title AS document_title
+    FROM sections s
+    JOIN documents d ON d.id = s.document_id
+    WHERE s.document_id = ?
+      AND s.status IN ('approved', 'published')
+    ORDER BY s.position ASC
+  `).all(documentId);
+
+  replaceIndexRows(companyId, documentId, releaseSnapshotId, sections);
+}
+```
+
+---
+
+## API Routes
+
+```
+GET /api/v2/companies/:cid/search?q=...&locale=en&productId=...
+GET /api/v2/companies/:cid/search/suggest?q=...
+POST /api/v2/companies/:cid/search/reindex/document/:did     requires: document.publish
+POST /api/v2/companies/:cid/search/reindex/product/:pid      requires: product.manage
+```
+
+Response shape:
+
+```json
+{
+  "items": [
+    {
+      "documentId": "doc_123",
+      "sectionId": "sec_456",
+      "locale": "en",
+      "title": "Getting Started",
+      "summary": "First steps for setup",
+      "snippet": "Install the CLI and configure your first workspace...",
+      "score": 0.92
+    }
+  ],
+  "total": 1,
+  "query": "workspace"
+}
+```
+
+---
+
+## Reader UX Scope
+
+- Search box in reader topbar
+- Product filter only if tenant has 2+ published products
+- Keyboard shortcut: `/` focuses search
+- Result click deep-links to section anchor and locale/version
+- Empty state suggests adjacent documents instead of a blank page
+
+```tsx
+function ReaderSearchBox() {
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
+
+  useEffect(() => {
+    if (!deferredQuery.trim()) return setResults([]);
+    startTransition(() => {
+      api.get(`/search?q=${encodeURIComponent(deferredQuery)}&locale=${locale}`)
+        .then(data => setResults(data.items ?? []));
+    });
+  }, [deferredQuery, locale]);
+
+  return (
+    <div className="reader-search">
+      <input
+        className="ds-input ds-input-sm"
+        placeholder="Search docs"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+      />
+      <SearchResultsPopover results={results} />
+    </div>
+  );
+}
+```
+
+---
+
+---
+
+# рџ”І Phase 7B вЂ” Localization Operations
+
+**Depends on:** Phase 2D + Phase 4C + Phase 7A  
+**Goal:** Turn per-section translation data into an operational system with queues, blockers, SLA visibility, and release readiness by locale.
+
+---
+
+## Backend Additions
+
+```
+GET  /api/v2/companies/:cid/localization/overview
+GET  /api/v2/companies/:cid/localization/queue?locale=ka&state=dirty
+POST /api/v2/companies/:cid/localization/locales
+POST /api/v2/companies/:cid/localization/bulk-assign
+POST /api/v2/companies/:cid/localization/mark-ready
+```
+
+Overview response:
+
+```json
+{
+  "locales": [
+    {
+      "locale": "ka",
+      "documentsReady": 12,
+      "documentsBlocked": 4,
+      "dirtyStrings": 28,
+      "inReviewStrings": 9,
+      "avgCompletionPct": 84,
+      "slaStatus": "at-risk"
+    }
+  ]
+}
+```
+
+---
+
+## Queue Rules
+
+- `dirty` when source section changed after translation update
+- `saved` when translator draft exists but not submitted
+- `review` when awaiting locale reviewer
+- `approved` when locale string cleared for release
+- Any locale below threshold blocks release publish in Phase 4E
+
+```js
+function computeTranslationState({ sourceUpdatedAt, translatedUpdatedAt, reviewedBy }) {
+  if (!translatedUpdatedAt) return 'dirty';
+  if (sourceUpdatedAt > translatedUpdatedAt) return 'dirty';
+  if (!reviewedBy) return 'review';
+  return 'approved';
+}
+```
+
+---
+
+## Frontend вЂ” Localization Console
+
+```tsx
+function LocalizationOpsPage() {
+  return (
+    <div className="localization-ops">
+      <div className="ds-page-header">
+        <div>
+          <p className="ds-page-header-title">Localization Ops</p>
+          <p className="ds-page-header-sub">Track translation readiness by locale, document, and reviewer</p>
+        </div>
+      </div>
+
+      <div className="localization-grid">
+        <LocaleHealthCards locales={overview?.locales ?? []} />
+        <TranslationQueueTable items={queue ?? []} />
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## Release Gate Extensions
+
+- Reader locale switcher only shows `approved` locales by default
+- Release readiness panel shows top 3 blocking locales
+- Product dashboard shows localization burndown before release date
+
+---
+
+---
+
+# рџ”І Phase 7C вЂ” Reader Feedback + Analytics
+
+**Depends on:** Phase 6A + Phase 7A  
+**Goal:** Add lightweight product analytics and reader feedback loops before any heavy BI work.
+
+---
+
+## Schema Additions (`server/schema.sql`)
+
+```sql
+CREATE TABLE IF NOT EXISTS reader_feedback (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  document_id TEXT REFERENCES documents(id) ON DELETE CASCADE,
+  section_id TEXT REFERENCES sections(id) ON DELETE CASCADE,
+  locale TEXT,
+  release_snapshot_id TEXT REFERENCES release_snapshots(id) ON DELETE SET NULL,
+  rating TEXT NOT NULL,
+  comment TEXT,
+  url TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  event_name TEXT NOT NULL,
+  actor_type TEXT NOT NULL DEFAULT 'reader',
+  document_id TEXT,
+  section_id TEXT,
+  locale TEXT,
+  metadata TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL
+);
+```
+
+---
+
+## Event Set
+
+- `reader.page_view`
+- `reader.search`
+- `reader.search_click`
+- `reader.feedback_submitted`
+- `reader.copy_code`
+- `reader.version_switch`
+- `reader.locale_switch`
+
+---
+
+## API Routes
+
+```
+POST /api/v2/public/reader/events
+POST /api/v2/public/reader/feedback
+GET  /api/v2/companies/:cid/analytics/reader
+GET  /api/v2/companies/:cid/analytics/search
+```
+
+---
+
+## Dashboard Scope
+
+- Top viewed documents
+- Search queries with zero-result rate
+- Sections with high negative feedback
+- Locale usage split
+- Version adoption over 7/30 days
+
+```tsx
+function ReaderAnalyticsPanel() {
+  return (
+    <div className="reader-analytics-panel">
+      <MetricCard label="Views (7d)" value={metrics.views7d} />
+      <MetricCard label="Zero-result search" value={`${metrics.zeroResultPct}%`} tone={metrics.zeroResultPct > 12 ? 'warning' : 'default'} />
+      <MetricCard label="Helpful rate" value={`${metrics.helpfulPct}%`} />
+      <MetricCard label="Locale coverage" value={`${metrics.activeLocales}/${metrics.totalLocales}`} />
+    </div>
+  );
+}
+```
+
+---
+
+## Reader Feedback Widget
+
+```tsx
+function ReaderFeedback({ documentId, sectionId }) {
+  return (
+    <div className="reader-feedback">
+      <span>Was this helpful?</span>
+      <button className="ds-btn ds-btn-sm ds-btn-ghost" onClick={() => submit('helpful')}>Yes</button>
+      <button className="ds-btn ds-btn-sm ds-btn-ghost" onClick={() => submit('not-helpful')}>No</button>
+    </div>
+  );
+}
+```
+
+---
+
+---
+
+# рџ”І Phase 8A вЂ” Integrations Platform
+
+**Depends on:** Phase 6B + Phase 7C  
+**Goal:** Expose stable external hooks only after content workflow, publishing, and telemetry are trustworthy.
+
+---
+
+## Integration Order
+
+1. Webhooks for publish/release events
+2. Outbound Slack notifications
+3. GitHub/Jira issue creation from blocking comments
+4. Read-only public content export API
+
+Do not build bidirectional sync before the comment/workflow model has been stable for at least one release cycle.
+
+---
+
+## Additional Webhook Events
+
+```
+release.created
+release.approved
+release.published
+release.rolled_back
+document.status_changed
+section.comment_blocking
+translation.locale_below_threshold
+```
+
+---
+
+## Files to Create
+
+```
+server/integrations/slack.mjs
+server/integrations/issues.mjs
+server/integrations/export-api.mjs
+```
+
+---
+
+## Slack Notification Scope
+
+```js
+export async function notifyReleasePublished({ companyId, release, actor }) {
+  await deliverWebhookLikeMessage(companyId, 'slack.release_published', {
+    releaseId: release.id,
+    label: release.label,
+    version: release.version,
+    actorName: actor.name,
+    publishedAt: nowIso(),
+  });
+}
+```
+
+---
+
+## Export API Contract
+
+```
+GET /api/v2/public/export/products/:pid
+GET /api/v2/public/export/documents/:did
+GET /api/v2/public/export/releases/:rid
+```
+
+Return only published snapshot-backed content. Never read draft tables directly from public export routes.
+
+---
+
+---
+
+# рџ”І Phase 8B вЂ” AI Assist With Human Review
+
+**Depends on:** Phase 5A + Phase 7B + Phase 7C + Phase 8A  
+**Goal:** Add AI where it accelerates docs operations, without bypassing workflow, approvals, or localization review.
+
+---
+
+## AI MVP Scope
+
+- Summarize research source into draft
+- Suggest document outline from product/topic prompt
+- Generate translation draft marked `dirty`
+- Rewrite section tone/clarity with diff preview
+- Suggest release notes from merged document changes
+
+Everything AI-generated must enter the normal status flow: `draft -> review -> approved`.
+
+---
+
+## Files to Create
+
+```
+server/ai/providers.mjs
+server/ai/prompts.mjs
+server/ai/tasks.mjs
+src/research/AIAssistPanel.tsx
+```
+
+---
+
+## Guardrails
+
+- Store prompt + model metadata in audit trail
+- Mark generated content with `source = 'ai'`
+- Never auto-publish AI output
+- Translation AI output always requires human reviewer
+- Per-company usage limits and per-feature toggles
+
+```sql
+CREATE TABLE IF NOT EXISTS ai_tasks (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  task_type TEXT NOT NULL,
+  source_entity_type TEXT,
+  source_entity_id TEXT,
+  model TEXT NOT NULL,
+  prompt_excerpt TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  output_ref TEXT,
+  created_by TEXT REFERENCES users(id),
+  reviewed_by TEXT REFERENCES users(id),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+```
+
+---
+
+## UX Pattern
+
+```tsx
+function AIAssistPanel({ section }) {
+  return (
+    <aside className="ai-assist-panel">
+      <div className="ds-card">
+        <p className="ds-eyebrow">AI Assist</p>
+        <h3>Generate draft changes</h3>
+        <p className="ds-text-secondary">Suggestions stay in draft until reviewed and approved.</p>
+        <button className="ds-btn ds-btn-primary ds-btn-sm">Generate Suggestion</button>
+      </div>
+    </aside>
+  );
+}
+```
+
+---
+
+## Success Criteria Before Enabling by Default
+
+- Publish workflow used successfully for 2+ internal release cycles
+- Localization review queue stable for top 2 locales
+- Reader analytics identifies high-friction pages reliably
+- Audit trail includes actor, model, prompt excerpt, and output destination
+
+---
+
+---
+
 # UI/UX Enforcement Rules
 
-## Red Flags — Flag Immediately
+## Red Flags вЂ” Flag Immediately
 
-- Same component defined in 3+ different shell CSS files → extract to `primitives.css`
+- Same component defined in 3+ different shell CSS files в†’ extract to `primitives.css`
 - `height: 100vh` + `overflow: hidden` + inner scroll container
 - `outline: none` with no `:focus-visible` replacement
 - Raw hex color in any shell CSS file
@@ -2338,11 +2846,11 @@ rg -n "@media" src/ --include="*.css" | grep -v "1440\|1280\|1024\|768\|480"
 ## Responsive Minimums
 
 Every shell must be verified at:
-- `1440px` — no oversized empty gaps
-- `1280px` — desktop grids still balanced
-- `1024px` — sidebars/tables/actions still usable
-- `768px` — header actions wrap cleanly
-- `480px` — actions and filters stack without clipping
+- `1440px` вЂ” no oversized empty gaps
+- `1280px` вЂ” desktop grids still balanced
+- `1024px` вЂ” sidebars/tables/actions still usable
+- `768px` вЂ” header actions wrap cleanly
+- `480px` вЂ” actions and filters stack without clipping
 
 ---
 
@@ -2361,27 +2869,30 @@ Every shell must be verified at:
 ## Implementation Sequence
 
 ```
-DONE  Phase 1    — Planning
-DONE  Phase 2A   — Schema completion
+DONE  Phase 1    - Planning
+DONE  Phase 2A   - Schema completion
+DONE  Phase 2B   - Storage adapter layer
+DONE  Phase 2C   - Permission system refactor
+DONE  Phase 2D   - API v2 content expansion
+DONE  Phase 2E   - Workflow engine
+DONE  Phase 3A   - Component extraction (primitives)
+DONE  Phase 3B   - Token completion pass
+DONE  Phase 3C   - Responsive audit
+DONE  Phase 3D   - ResearchApp design system integration
 
-NOW   Phase 2B   — Storage adapter layer
-      Phase 2C   — Permission system refactor   (parallel with 2B)
-      Phase 2D   — API v2 content expansion     (after 2B + 2C)
-      Phase 2E   — Workflow engine              (alongside 2D)
+NOW   Phase 4A   - Comments system
+      Phase 4B   - Workflow transition UI
+      Phase 4C   - Translation locale management
+      Phase 4D   - Product members
+      Phase 4E   - Release full lifecycle UI
 
-NEXT  Phase 3A   — Component extraction (primitives)
-      Phase 3B   — Token completion pass
-      Phase 3C   — Responsive audit
-      Phase 3D   — ResearchApp design system integration
-
-THEN  Phase 4A   — Comments system
-      Phase 4B   — Workflow transition UI
-      Phase 4C   — Translation locale management
-      Phase 4D   — Product members
-      Phase 4E   — Release full lifecycle UI
-
-LATER Phase 5A   — Research backend
-      Phase 5B   — CMS bridge
-      Phase 6A   — Reader modernization
-      Phase 6B   — API keys + webhooks
+LATER Phase 5A   - Research backend
+      Phase 5B   - CMS bridge
+      Phase 6A   - Reader modernization
+      Phase 6B   - API keys + webhooks
+      Phase 7A   - Search index + discovery
+      Phase 7B   - Localization operations
+      Phase 7C   - Reader feedback + analytics
+      Phase 8A   - Integrations platform
+      Phase 8B   - AI assist with human review
 ```

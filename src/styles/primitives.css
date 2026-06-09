@@ -51,7 +51,6 @@
   border-color: var(--ds-accent-primary);
   background: var(--ds-accent-primary);
   color: var(--ds-text-inverse);
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--ds-accent-primary) 22%, transparent);
 }
 
 .ds-btn-primary:hover:not(:disabled) {

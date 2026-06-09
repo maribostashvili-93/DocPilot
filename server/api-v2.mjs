@@ -16,6 +16,9 @@ import * as documentAdapter    from './adapter/documents.mjs';
 import * as sectionAdapter     from './adapter/sections.mjs';
 import * as translationAdapter from './adapter/translations.mjs';
 import * as releaseAdapter     from './adapter/releases.mjs';
+import * as researchSources    from './research/sources.mjs';
+import * as researchJobs       from './research/jobs.mjs';
+import * as researchDrafts     from './research/drafts.mjs';
 
 function send(res, status, body, extraHeaders = {}) {
   const headers = {
@@ -618,6 +621,33 @@ export async function handleApiV2(req, res, url) {
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/releases\/([A-Za-z0-9_-]+)\/readiness$/);
   if (m && req.method === 'GET') return routeReleaseReadiness(req, res, m[1], m[2]);
 
+  // Research
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/sources$/);
+  if (m) {
+    if (req.method === 'GET')  return routeResearchSourcesList(req, res, m[1]);
+    if (req.method === 'POST') return routeResearchSourceCreate(req, res, m[1]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/sources\/([A-Za-z0-9_-]+)$/);
+  if (m) {
+    if (req.method === 'GET')    return routeResearchSourceGet(req, res, m[1], m[2]);
+    if (req.method === 'DELETE') return routeResearchSourceDelete(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/sources\/([A-Za-z0-9_-]+)\/analyze$/);
+  if (m && req.method === 'POST') return routeResearchSourceAnalyze(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/sources\/([A-Za-z0-9_-]+)\/generate-draft$/);
+  if (m && req.method === 'POST') return routeResearchGenerateDraft(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/jobs$/);
+  if (m && req.method === 'GET') return routeResearchJobsList(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/drafts$/);
+  if (m) {
+    if (req.method === 'GET')  return routeResearchDraftsList(req, res, m[1]);
+    if (req.method === 'POST') return routeResearchDraftCreate(req, res, m[1]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/drafts\/([A-Za-z0-9_-]+)\/send-to-cms$/);
+  if (m && req.method === 'POST') return routeResearchDraftSendToCms(req, res, m[1], m[2]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/drafts\/([A-Za-z0-9_-]+)\/discard$/);
+  if (m && req.method === 'POST') return routeResearchDraftDiscard(req, res, m[1], m[2]);
+
   return null; // signal unhandled — fall through to legacy router
 }
 
@@ -1172,4 +1202,124 @@ function routeReleaseReadiness(req, res, cid, rid) {
       blockingIssues:       issues,
     },
   });
+}
+
+// ─── Research ─────────────────────────────────────────────────────────────────
+
+function routeResearchSourcesList(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  return send(res, 200, { sources: researchSources.list(cid) });
+}
+
+async function routeResearchSourceCreate(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  try {
+    const source = researchSources.create(cid, { name: body.name, url: body.url, type: body.type });
+    return send(res, 201, { source });
+  } catch (e) {
+    return send(res, e.status ?? 400, { error: e.message });
+  }
+}
+
+function routeResearchSourceGet(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const source = researchSources.get(cid, sid);
+  if (!source) return send(res, 404, { error: 'Not found' });
+  return send(res, 200, { source });
+}
+
+function routeResearchSourceDelete(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!researchSources.get(cid, sid)) return send(res, 404, { error: 'Not found' });
+  researchSources.remove(cid, sid);
+  return send(res, 204, null);
+}
+
+async function routeResearchSourceAnalyze(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  try {
+    const job = await researchJobs.trigger(cid, sid);
+    return send(res, 202, { job });
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
+}
+
+async function routeResearchGenerateDraft(req, res, cid, sid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const source = researchSources.get(cid, sid);
+  if (!source) return send(res, 404, { error: 'Not found' });
+  if (source.status !== 'ready') return send(res, 422, { error: 'Source must be analyzed before generating a draft' });
+  const content = researchDrafts.generateContent(source);
+  try {
+    const draft = researchDrafts.create(cid, { title: `Draft from ${source.name}`, sourceId: sid, content });
+    return send(res, 201, { draft });
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
+}
+
+function routeResearchJobsList(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  return send(res, 200, { jobs: researchJobs.list(cid) });
+}
+
+function routeResearchDraftsList(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  return send(res, 200, { drafts: researchDrafts.list(cid) });
+}
+
+async function routeResearchDraftCreate(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  try {
+    const draft = researchDrafts.create(cid, { title: body.title, sourceId: body.sourceId ?? null, content: body.content });
+    return send(res, 201, { draft });
+  } catch (e) {
+    return send(res, e.status ?? 400, { error: e.message });
+  }
+}
+
+async function routeResearchDraftSendToCms(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  try {
+    const result = await researchDrafts.sendToCms(cid, did, body.productId, user.id);
+    return send(res, 200, result);
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
+}
+
+async function routeResearchDraftDiscard(req, res, cid, did) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  try {
+    const draft = researchDrafts.discard(cid, did);
+    return send(res, 200, { draft });
+  } catch (e) {
+    return send(res, e.status ?? 500, { error: e.message });
+  }
 }

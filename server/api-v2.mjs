@@ -1,5 +1,6 @@
 // /api/v2/* — secure multi-tenant API. Server-enforced auth + RBAC + tenant boundary.
 
+import crypto from 'node:crypto';
 import {
   hashPassword, verifyPassword, validatePasswordPolicy,
   findUserByEmail, getUserById, getUserRoles, createUser, setUserRoles, updatePassword,
@@ -54,6 +55,28 @@ function getIp(req) {
 function findCompanyBySlug(slug) {
   if (!slug) return null;
   return db.prepare('SELECT * FROM companies WHERE slug = ?').get(String(slug)) ?? null;
+}
+
+function loadAuthWithApiKey(req) {
+  const base = loadAuthFromRequest(req);
+  if (base.user) return base;
+  const authHeader = req.headers['authorization'] ?? '';
+  if (authHeader.startsWith('Bearer ')) {
+    const rawToken = authHeader.slice(7);
+    const keyHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const key = db.prepare(
+      'SELECT * FROM api_keys WHERE key_hash = ? AND revoked_at IS NULL',
+    ).get(keyHash);
+    if (key) {
+      db.prepare('UPDATE api_keys SET last_used_at = ? WHERE id = ?').run(nowIso(), key.id);
+      return {
+        session: null,
+        user: { id: `apikey:${key.id}`, company_id: key.company_id, _isApiKey: true },
+        roles: ['api-key'],
+      };
+    }
+  }
+  return base;
 }
 
 function companyById(id) {
@@ -647,6 +670,29 @@ export async function handleApiV2(req, res, url) {
   if (m && req.method === 'POST') return routeResearchDraftSendToCms(req, res, m[1], m[2]);
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/research\/drafts\/([A-Za-z0-9_-]+)\/discard$/);
   if (m && req.method === 'POST') return routeResearchDraftDiscard(req, res, m[1], m[2]);
+
+  // API Keys
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/api-keys$/);
+  if (m) {
+    if (req.method === 'GET')  return routeApiKeysList(req, res, m[1]);
+    if (req.method === 'POST') return routeApiKeyCreate(req, res, m[1]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/api-keys\/([A-Za-z0-9_-]+)\/revoke$/);
+  if (m && req.method === 'POST') return routeApiKeyRevoke(req, res, m[1], m[2]);
+
+  // Webhooks
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/webhooks$/);
+  if (m) {
+    if (req.method === 'GET')  return routeWebhooksList(req, res, m[1]);
+    if (req.method === 'POST') return routeWebhookCreate(req, res, m[1]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/webhooks\/([A-Za-z0-9_-]+)$/);
+  if (m) {
+    if (req.method === 'DELETE') return routeWebhookDelete(req, res, m[1], m[2]);
+    if (req.method === 'PUT')    return routeWebhookUpdate(req, res, m[1], m[2]);
+  }
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/webhooks\/([A-Za-z0-9_-]+)\/deliveries$/);
+  if (m && req.method === 'GET') return routeWebhookDeliveries(req, res, m[1], m[2]);
 
   return null; // signal unhandled — fall through to legacy router
 }
@@ -1322,4 +1368,141 @@ async function routeResearchDraftDiscard(req, res, cid, did) {
   } catch (e) {
     return send(res, e.status ?? 500, { error: e.message });
   }
+}
+
+// ─── API Keys ─────────────────────────────────────────────────────────────────
+
+function safeKeyPayload(key) {
+  const { key_hash, ...safe } = key;
+  void key_hash;
+  return safe;
+}
+
+function routeApiKeysList(req, res, cid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'settings.view')) return send(res, 403, { error: 'Forbidden' });
+  const keys = db.prepare(
+    'SELECT * FROM api_keys WHERE company_id = ? ORDER BY created_at DESC',
+  ).all(cid);
+  return send(res, 200, { apiKeys: keys.map(safeKeyPayload) });
+}
+
+async function routeApiKeyCreate(req, res, cid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'settings.edit')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.name?.trim()) return send(res, 400, { error: 'name is required' });
+
+  const rawToken = `dpk_${crypto.randomBytes(32).toString('hex')}`;
+  const keyHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+  const keyPrefix = rawToken.slice(0, 10);
+  const id = makeId('apk');
+  db.prepare(
+    `INSERT INTO api_keys(id, company_id, name, key_hash, key_prefix, scopes, created_by, created_at)
+     VALUES(?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, cid, body.name.trim(), keyHash, keyPrefix,
+    JSON.stringify(body.scopes ?? ['*']), user.id, nowIso());
+
+  const key = db.prepare('SELECT * FROM api_keys WHERE id = ?').get(id);
+  return send(res, 201, { apiKey: safeKeyPayload(key), token: rawToken });
+}
+
+function routeApiKeyRevoke(req, res, cid, kid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'settings.edit')) return send(res, 403, { error: 'Forbidden' });
+  const key = db.prepare('SELECT * FROM api_keys WHERE id = ? AND company_id = ?').get(kid, cid);
+  if (!key) return send(res, 404, { error: 'Not found' });
+  if (key.revoked_at) return send(res, 422, { error: 'Already revoked' });
+  db.prepare('UPDATE api_keys SET revoked_at = ? WHERE id = ?').run(nowIso(), kid);
+  return send(res, 200, { revoked: true });
+}
+
+// ─── Webhooks ─────────────────────────────────────────────────────────────────
+
+function safeWebhookPayload(ep) {
+  const { secret, ...safe } = ep;
+  void secret;
+  return { ...safe, events: JSON.parse(ep.events) };
+}
+
+function routeWebhooksList(req, res, cid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'settings.view')) return send(res, 403, { error: 'Forbidden' });
+  const endpoints = db.prepare(
+    'SELECT * FROM webhook_endpoints WHERE company_id = ? ORDER BY created_at DESC',
+  ).all(cid);
+  return send(res, 200, { webhooks: endpoints.map(safeWebhookPayload) });
+}
+
+async function routeWebhookCreate(req, res, cid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'settings.edit')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.url?.trim()) return send(res, 400, { error: 'url is required' });
+  try { new URL(body.url.trim()); } catch { return send(res, 400, { error: 'url must be a valid absolute URL' }); }
+
+  const id = makeId('whk');
+  const secret = crypto.randomBytes(24).toString('hex');
+  const now = nowIso();
+  db.prepare(
+    `INSERT INTO webhook_endpoints(id, company_id, url, secret, events, active, created_by, created_at, updated_at)
+     VALUES(?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+  ).run(id, cid, body.url.trim(), secret,
+    JSON.stringify(body.events ?? ['*']), user.id, now, now);
+
+  const ep = db.prepare('SELECT * FROM webhook_endpoints WHERE id = ?').get(id);
+  return send(res, 201, { webhook: safeWebhookPayload(ep), secret });
+}
+
+function routeWebhookDelete(req, res, cid, eid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'settings.edit')) return send(res, 403, { error: 'Forbidden' });
+  const ep = db.prepare('SELECT * FROM webhook_endpoints WHERE id = ? AND company_id = ?').get(eid, cid);
+  if (!ep) return send(res, 404, { error: 'Not found' });
+  db.prepare('DELETE FROM webhook_endpoints WHERE id = ?').run(eid);
+  return send(res, 204, null);
+}
+
+async function routeWebhookUpdate(req, res, cid, eid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'settings.edit')) return send(res, 403, { error: 'Forbidden' });
+  const ep = db.prepare('SELECT * FROM webhook_endpoints WHERE id = ? AND company_id = ?').get(eid, cid);
+  if (!ep) return send(res, 404, { error: 'Not found' });
+  const body = await readBody(req);
+  db.prepare(
+    'UPDATE webhook_endpoints SET active = ?, events = ?, updated_at = ? WHERE id = ?',
+  ).run(
+    body.active !== undefined ? (body.active ? 1 : 0) : ep.active,
+    body.events ? JSON.stringify(body.events) : ep.events,
+    nowIso(), eid,
+  );
+  const updated = db.prepare('SELECT * FROM webhook_endpoints WHERE id = ?').get(eid);
+  return send(res, 200, { webhook: safeWebhookPayload(updated) });
+}
+
+function routeWebhookDeliveries(req, res, cid, eid) {
+  const { user, roles } = loadAuthWithApiKey(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'settings.view')) return send(res, 403, { error: 'Forbidden' });
+  const ep = db.prepare('SELECT * FROM webhook_endpoints WHERE id = ? AND company_id = ?').get(eid, cid);
+  if (!ep) return send(res, 404, { error: 'Not found' });
+  const deliveries = db.prepare(
+    'SELECT * FROM webhook_deliveries WHERE endpoint_id = ? ORDER BY delivered_at DESC LIMIT 50',
+  ).all(eid);
+  return send(res, 200, { deliveries });
 }

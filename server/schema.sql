@@ -359,3 +359,48 @@ CREATE TABLE IF NOT EXISTS workflow_transitions (
 
 CREATE INDEX IF NOT EXISTS idx_wtrans_entity ON workflow_transitions(entity_type, entity_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_wtrans_company ON workflow_transitions(company_id, created_at DESC);
+
+-- ── Phase 6B: API Keys ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS api_keys (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  key_hash TEXT NOT NULL UNIQUE,
+  key_prefix TEXT NOT NULL,
+  scopes TEXT NOT NULL DEFAULT '["*"]',
+  created_by TEXT REFERENCES users(id),
+  last_used_at TEXT,
+  revoked_at TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_company ON api_keys(company_id);
+CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(key_hash);
+
+-- ── Phase 6B: Webhooks ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS webhook_endpoints (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  secret TEXT NOT NULL,
+  events TEXT NOT NULL DEFAULT '["*"]',
+  active INTEGER NOT NULL DEFAULT 1,
+  created_by TEXT REFERENCES users(id),
+  last_delivered_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS webhook_deliveries (
+  id TEXT PRIMARY KEY,
+  endpoint_id TEXT NOT NULL REFERENCES webhook_endpoints(id) ON DELETE CASCADE,
+  event TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  status_code INTEGER,
+  response_body TEXT,
+  duration_ms INTEGER,
+  delivered_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_webhook_ep_company ON webhook_endpoints(company_id);
+CREATE INDEX IF NOT EXISTS idx_webhook_del_endpoint ON webhook_deliveries(endpoint_id, delivered_at DESC);

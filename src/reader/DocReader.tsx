@@ -19,9 +19,48 @@ export type DocReaderModel = {
   company: { slug: string; name: string; branding?: { accent?: string; defaultTheme?: 'light' | 'dark' | 'system' } } | null;
   siblings: { prev: { id: string; title: string } | null; next: { id: string; title: string } | null };
   availableDocs: DocSelectorItem[];
+  availableLocales?: { locale: string; label: string }[];
+  availableVersions?: { id: string; version: string }[];
+  currentLocale?: string;
+  currentVersion?: string;
 };
 
 type TocEntry = { id: string; number: string; title: string; subs: { id: string; title: string }[] };
+
+function ReaderControls({ model }: { model: DocReaderModel }) {
+  const navigate = useNavigate();
+  const locales = model.availableLocales ?? [];
+  const versions = model.availableVersions ?? [];
+  if (locales.length <= 1 && versions.length <= 1) return null;
+  return (
+    <div className="reader-controls">
+      {locales.length > 1 && (
+        <select
+          className="reader-controls-select"
+          value={model.currentLocale ?? locales[0]?.locale}
+          onChange={(e) => navigate(`?locale=${e.target.value}`)}
+          aria-label="Language"
+        >
+          {locales.map((l) => (
+            <option key={l.locale} value={l.locale}>{l.label}</option>
+          ))}
+        </select>
+      )}
+      {versions.length > 1 && (
+        <select
+          className="reader-controls-select"
+          value={model.currentVersion ?? versions[0]?.version}
+          onChange={(e) => navigate(`?version=${e.target.value}`)}
+          aria-label="Version"
+        >
+          {versions.map((v) => (
+            <option key={v.id} value={v.version}>{v.version}</option>
+          ))}
+        </select>
+      )}
+    </div>
+  );
+}
 
 const NUMBER_PREFIX = /^\s*\d+(?:\.\d+)?\s+/;
 
@@ -204,6 +243,7 @@ export function DocReader({ resolveDoc }: DocReaderProps) {
           currentDocId={model.doc.id}
           onPick={(id) => navigate(`/docs/${id}`)}
         />
+        <ReaderControls model={model} />
         <button type="button" className="search-trigger" aria-label="Search documentation" onClick={() => setSearchOpen(true)}>
           <span>⌕ Search documentation…</span>
           <kbd>⌘K</kbd>

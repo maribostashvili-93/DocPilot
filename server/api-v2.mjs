@@ -696,6 +696,18 @@ export async function handleApiV2(req, res, url) {
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/webhooks\/([A-Za-z0-9_-]+)\/deliveries$/);
   if (m && req.method === 'GET') return routeWebhookDeliveries(req, res, m[1], m[2]);
 
+  // Localization Ops
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/localization\/overview$/);
+  if (m && req.method === 'GET') return routeLocalizationOverview(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/localization\/queue$/);
+  if (m && req.method === 'GET') return routeLocalizationQueue(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/localization\/locales$/);
+  if (m && req.method === 'POST') return routeLocalizationAddLocale(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/localization\/bulk-assign$/);
+  if (m && req.method === 'POST') return routeLocalizationBulkAssign(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/localization\/mark-ready$/);
+  if (m && req.method === 'POST') return routeLocalizationMarkReady(req, res, m[1]);
+
   // Search
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/search$/);
   if (m && req.method === 'GET') return routeSearch(req, res, m[1]);
@@ -1576,4 +1588,172 @@ function routeReindexProduct(req, res, cid, pid) {
   } catch (e) {
     return send(res, e.status ?? 500, { error: e.message });
   }
+}
+
+// ─── Localization Ops ─────────────────────────────────────────────────────────
+
+function computeTranslationState({ sourceUpdatedAt, translatedUpdatedAt, reviewedBy }) {
+  if (!translatedUpdatedAt) return 'dirty';
+  if (sourceUpdatedAt > translatedUpdatedAt) return 'dirty';
+  if (!reviewedBy) return 'review';
+  return 'approved';
+}
+
+function routeLocalizationOverview(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.view')) return send(res, 403, { error: 'Forbidden' });
+
+  const localeRows = db.prepare(
+    'SELECT locale, completion_pct, status FROM translation_locales WHERE company_id = ?',
+  ).all(cid);
+
+  const byLocale = {};
+  for (const row of localeRows) {
+    if (!byLocale[row.locale]) {
+      byLocale[row.locale] = { locale: row.locale, totalDocs: 0, docsReady: 0, docsBlocked: 0, sumPct: 0 };
+    }
+    const entry = byLocale[row.locale];
+    entry.totalDocs++;
+    entry.sumPct += row.completion_pct;
+    if (row.status === 'approved') entry.docsReady++;
+    else entry.docsBlocked++;
+  }
+
+  const stringCountRows = db.prepare(`
+    SELECT ts.locale, ts.state, COUNT(*) AS cnt
+    FROM translation_strings ts
+    WHERE ts.company_id = ?
+    GROUP BY ts.locale, ts.state
+  `).all(cid);
+
+  const stringsByLocale = {};
+  for (const r of stringCountRows) {
+    if (!stringsByLocale[r.locale]) stringsByLocale[r.locale] = { dirty: 0, review: 0, approved: 0 };
+    stringsByLocale[r.locale][r.state] = (stringsByLocale[r.locale][r.state] ?? 0) + r.cnt;
+  }
+
+  const locales = Object.values(byLocale).map((entry) => {
+    const strings = stringsByLocale[entry.locale] ?? { dirty: 0, review: 0, approved: 0 };
+    const avgPct = entry.totalDocs > 0 ? Math.round(entry.sumPct / entry.totalDocs) : 0;
+    return {
+      locale: entry.locale,
+      documentsReady: entry.docsReady,
+      documentsBlocked: entry.docsBlocked,
+      dirtyStrings: strings.dirty,
+      inReviewStrings: strings.review,
+      avgCompletionPct: avgPct,
+      slaStatus: avgPct >= 90 ? 'on-track' : avgPct >= 70 ? 'at-risk' : 'blocked',
+    };
+  });
+
+  return send(res, 200, { locales });
+}
+
+function routeLocalizationQueue(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.view')) return send(res, 403, { error: 'Forbidden' });
+
+  const url2 = new URL(req.url, 'http://x');
+  const locale = url2.searchParams.get('locale') || null;
+  const stateFilter = url2.searchParams.get('state') || null;
+
+  let query = `
+    SELECT
+      ts.id, ts.section_id, ts.locale, ts.state, ts.translated_by,
+      ts.reviewed_by, ts.updated_at,
+      s.title AS section_title, s.updated_at AS source_updated_at,
+      d.id AS document_id, d.title AS document_title
+    FROM translation_strings ts
+    JOIN sections s ON s.id = ts.section_id
+    JOIN documents d ON d.id = s.document_id
+    WHERE ts.company_id = ?
+  `;
+  const args = [cid];
+
+  if (locale) { query += ' AND ts.locale = ?'; args.push(locale); }
+  if (stateFilter) { query += ' AND ts.state = ?'; args.push(stateFilter); }
+  query += ' ORDER BY ts.updated_at ASC LIMIT 100';
+
+  const rows = db.prepare(query).all(...args);
+  const items = rows.map((row) => ({
+    id: row.id,
+    sectionId: row.section_id,
+    documentId: row.document_id,
+    documentTitle: row.document_title,
+    sectionTitle: row.section_title,
+    locale: row.locale,
+    state: computeTranslationState({
+      sourceUpdatedAt: row.source_updated_at,
+      translatedUpdatedAt: row.updated_at,
+      reviewedBy: row.reviewed_by,
+    }),
+    translatedBy: row.translated_by,
+    reviewedBy: row.reviewed_by,
+    updatedAt: row.updated_at,
+  }));
+
+  return send(res, 200, { items, total: items.length });
+}
+
+async function routeLocalizationAddLocale(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.edit')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.locale?.trim()) return send(res, 400, { error: 'locale is required' });
+  if (!body.documentId) return send(res, 400, { error: 'documentId is required' });
+  const now = nowIso();
+  const existing = db.prepare(
+    'SELECT * FROM translation_locales WHERE document_id = ? AND locale = ?',
+  ).get(body.documentId, body.locale.trim());
+  if (existing) return send(res, 409, { error: 'Locale already exists for this document' });
+  const id = makeId('tl');
+  db.prepare(
+    `INSERT INTO translation_locales(id, company_id, document_id, locale, status, completion_pct, reviewer, created_at, updated_at)
+     VALUES(?, ?, ?, ?, 'not-started', 0, ?, ?, ?)`,
+  ).run(id, cid, body.documentId, body.locale.trim(), body.reviewer ?? null, now, now);
+  const row = db.prepare('SELECT * FROM translation_locales WHERE id = ?').get(id);
+  return send(res, 201, { locale: row });
+}
+
+async function routeLocalizationBulkAssign(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.edit')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.locale?.trim()) return send(res, 400, { error: 'locale is required' });
+  if (!body.reviewerId) return send(res, 400, { error: 'reviewerId is required' });
+  const now = nowIso();
+  const result = db.prepare(
+    `UPDATE translation_locales SET reviewer = ?, updated_at = ?
+     WHERE company_id = ? AND locale = ?`,
+  ).run(body.reviewerId, now, cid, body.locale.trim());
+  return send(res, 200, { updated: result.changes });
+}
+
+async function routeLocalizationMarkReady(req, res, cid) {
+  const { user, roles } = loadAuthFromRequest(req);
+  if (!user) return send(res, 401, { error: 'Unauthorized' });
+  if (!requireTenantMatch(user, roles, cid)) return send(res, 403, { error: 'Forbidden' });
+  if (!can(user, roles, 'translation.review')) return send(res, 403, { error: 'Forbidden' });
+  const body = await readBody(req);
+  if (!body.locale?.trim()) return send(res, 400, { error: 'locale is required' });
+  if (!body.documentId) return send(res, 400, { error: 'documentId is required' });
+  const now = nowIso();
+  db.prepare(
+    `UPDATE translation_locales SET status = 'approved', completion_pct = 100, updated_at = ?
+     WHERE company_id = ? AND document_id = ? AND locale = ?`,
+  ).run(now, cid, body.documentId, body.locale.trim());
+  db.prepare(
+    `UPDATE translation_strings SET state = 'approved', reviewed_by = ?, updated_at = ?
+     WHERE company_id = ? AND locale = ?
+     AND section_id IN (SELECT id FROM sections WHERE document_id = ?)`,
+  ).run(user.id, now, cid, body.locale.trim(), body.documentId);
+  return send(res, 200, { ok: true });
 }

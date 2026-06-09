@@ -22,6 +22,7 @@ import * as researchJobs       from './research/jobs.mjs';
 import * as researchDrafts     from './research/drafts.mjs';
 import * as searchQuery        from './search/query.mjs';
 import * as searchIndexer      from './search/indexer.mjs';
+import * as exportApi          from './integrations/export-api.mjs';
 
 function send(res, status, body, extraHeaders = {}) {
   const headers = {
@@ -699,6 +700,14 @@ export async function handleApiV2(req, res, url) {
   // Reader analytics / feedback (public — no auth required)
   if (p === '/api/v2/public/reader/events' && req.method === 'POST') return routePublicReaderEvent(req, res);
   if (p === '/api/v2/public/reader/feedback' && req.method === 'POST') return routePublicReaderFeedback(req, res);
+
+  // Public export API (read-only, published content only)
+  m = p.match(/^\/api\/v2\/public\/export\/products\/([A-Za-z0-9_-]+)$/);
+  if (m && req.method === 'GET') return routeExportProduct(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/public\/export\/documents\/([A-Za-z0-9_-]+)$/);
+  if (m && req.method === 'GET') return routeExportDocument(req, res, m[1]);
+  m = p.match(/^\/api\/v2\/public\/export\/releases\/([A-Za-z0-9_-]+)$/);
+  if (m && req.method === 'GET') return routeExportRelease(req, res, m[1]);
 
   // Analytics dashboard
   m = p.match(/^\/api\/v2\/companies\/([A-Za-z0-9_-]+)\/analytics\/reader$/);
@@ -1889,4 +1898,24 @@ function routeAnalyticsSearch(req, res, cid) {
     zeroResultPct,
     topQueries,
   });
+}
+
+// ─── Public Export API (Phase 8A) ─────────────────────────────────────────────
+
+function routeExportProduct(req, res, pid) {
+  const data = exportApi.exportProduct(pid);
+  if (!data) return send(res, 404, { error: 'Product not found or not published' });
+  return send(res, 200, data, { 'cache-control': 'public, max-age=60' });
+}
+
+function routeExportDocument(req, res, did) {
+  const data = exportApi.exportDocument(did);
+  if (!data) return send(res, 404, { error: 'Document not found or not published' });
+  return send(res, 200, data, { 'cache-control': 'public, max-age=60' });
+}
+
+function routeExportRelease(req, res, rid) {
+  const data = exportApi.exportRelease(rid);
+  if (!data) return send(res, 404, { error: 'Release not found or not published' });
+  return send(res, 200, data, { 'cache-control': 'public, max-age=60' });
 }

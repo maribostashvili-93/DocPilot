@@ -12,6 +12,7 @@ import backofficeSectionArgsJson from '../content/sections/backoffice.json' with
 import integrationSectionArgsJson from '../content/sections/integration.json' with { type: 'json' };
 import { auth, canRoleWrite, store } from './storage';
 import type { PersistenceStatus, UserRole, WritePermission } from './storage';
+import { SectionCommentPanel } from './multitenant/SectionCommentPanel';
 import MarketingLanding from './marketing/MarketingLanding';
 import './marketing/marketing.css';
 import CompanyLanding from './multitenant/CompanyLanding';
@@ -5047,11 +5048,7 @@ function EditableSectionPreview({ section, sectionTargets, save, openModal, edit
         />
       ) : null}
       {!reorderMode && !collapsed ? (
-        <div className="section-review-meta">
-          <span>Workflow: {section.status}</span>
-          <span>Reviewer: {section.reviewer || section.owner}</span>
-          <span>{section.comments?.length ?? 0} comments</span>
-        </div>
+        <SectionCommentPanel sectionId={section.id} />
       ) : null}
       <SectionControllerBar
         section={section}

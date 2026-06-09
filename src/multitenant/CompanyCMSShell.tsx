@@ -15,6 +15,7 @@ import {
 } from './api';
 import type { AuthUser, CompanyBranding, PublicCompany } from './api';
 import { auth } from '../storage';
+import { TenantProvider } from './TenantContext';
 
 type Phase =
   | { kind: 'loading' }
@@ -114,18 +115,20 @@ export function TenantCMSEntry({ children }: { children: ReactNode }) {
   }
 
   return (
-    <CompanyCMSChrome
-      company={phase.company}
-      user={phase.user}
-      onLogout={async () => {
-        clearLegacyAdminSession();
-        auth.logout();
-        try { await authLogout(); } catch { /* ignore */ }
-        navigate(`/c/${slug}`);
-      }}
-    >
-      {children}
-    </CompanyCMSChrome>
+    <TenantProvider companyId={phase.company.id} userId={phase.user.id}>
+      <CompanyCMSChrome
+        company={phase.company}
+        user={phase.user}
+        onLogout={async () => {
+          clearLegacyAdminSession();
+          auth.logout();
+          try { await authLogout(); } catch { /* ignore */ }
+          navigate(`/c/${slug}`);
+        }}
+      >
+        {children}
+      </CompanyCMSChrome>
+    </TenantProvider>
   );
 }
 
